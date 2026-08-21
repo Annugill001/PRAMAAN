@@ -29,47 +29,47 @@ function seededShuffle(array, rng) {
 }
 // --- Content Bank (Independent Real Social Captions) ---
 const bankIG = [
-  "Early morning espresso and journaling before the sprint starts ☕",
-  "Golden hour hits different from this rooftop view 🌇✨",
-  "Spontaneous weekend roadtrip to reset and explore 🌿",
-  "Tried out the new artisan sourdough bakery in town. 10/10 🥖",
-  "Late night editing session. The final color grade is locked 🎬",
-  "Sunday 10k trail run through the ridge forest 🏃‍♂️🌳",
-  "Exploring the historic street alleys and local bookstores 📚",
-  "Dinner with the old college gang after almost two years 🍕🥂",
-  "Finding calm in the middle of a packed work week 🧘‍♂️",
-  "Backstage passes and soundcheck vibes before the concert 🎸",
-  "Rainy evening in the city with warm handmade ramen 🍜🌧️",
-  "Morning workout complete. Setting high energy for the week 💪",
-  "Sunset walk along the promenade. Perfect weather today 🌅",
-  "Visiting heritage galleries and documenting architectural symmetry 🏛️",
-  "Coffee on the balcony watching the city wake up ☕🏙️"
+  "Early morning espresso and journaling before the sprint starts.",
+  "Golden hour hits different from this rooftop view ✨",
+  "Spontaneous weekend roadtrip to reset and explore.",
+  "Tried out the new artisan sourdough bakery in town. 10/10",
+  "Late night editing session. The final color grade is locked.",
+  "Sunday 10k trail run through the ridge forest.",
+  "Exploring the historic street alleys and local bookstores.",
+  "Dinner with the old college gang after almost two years 🍕",
+  "Finding calm in the middle of a packed work week.",
+  "Backstage passes and soundcheck vibes before the concert.",
+  "Rainy evening in the city with warm handmade ramen 🍜",
+  "Morning workout complete. Setting high energy for the week.",
+  "Sunset walk along the promenade. Perfect weather today.",
+  "Visiting heritage galleries and documenting architectural symmetry.",
+  "Coffee on the balcony watching the city wake up."
 ];
 
 const bankFB = [
   "Had an insightful panel discussion on decentralized technology today. Grateful to the organizers!",
-  "Family picnic at the botanical gardens this Sunday. Great catching up with everyone 🌳👨‍👩‍👧‍👦",
+  "Family picnic at the botanical gardens this Sunday. Great catching up with everyone.",
   "Excited to share that our team has shipped the quarterly platform update ahead of schedule! 🚀",
-  "Attended a close friend's wedding reception last night. Wishing them a lifetime of joy 🎉💍",
-  "Volunteered with the local community tree plantation drive this morning 🌍💚",
-  "Sunday road trip with family to the foothills. Nothing beats fresh mountain air 🚗🏔️",
+  "Attended a close friend's wedding reception last night. Wishing them a lifetime of joy.",
+  "Volunteered with the local community tree plantation drive this morning.",
+  "Sunday road trip with family to the foothills. Nothing beats fresh mountain air.",
   "Annual alumni reunion was full of nostalgic stories and great laughs!",
-  "Proud moment watching my younger sister receive her graduation degree today! 🎓🌟",
+  "Proud moment watching my younger sister receive her graduation degree today! 🎓",
   "Celebrating another year at the organization. An incredible journey of learning and growth.",
-  "Weekend DIY home garden project is finally done. Fresh basil and tomatoes coming soon 🌱🍅",
-  "Quarterly community book club meetup concluded. Wonderful discussions shared 📖"
+  "Weekend DIY home garden project is finally done. Fresh basil and tomatoes coming soon.",
+  "Quarterly community book club meetup concluded. Wonderful discussions shared."
 ];
 const bankTW = [
-  "Coffee before opening the repository ☕ #DevLife",
-  "Clean code and concise documentation save days of post-incident triage 💡",
+  "Coffee before opening the repository. #DevLife",
+  "Clean code and concise documentation save days of post-incident triage.",
   "Late night deployment went smoothly with zero downtime. Kudos to the infra team 🚀",
   "Deep learning models are only as good as the evaluation datasets. Quality > Quantity.",
-  "Attending the developer keynote session live. Excited for the new open-source releases ⚡",
-  "Quick productivity rule: block 2 uninterrupted hours daily for deep focused tasks 🔕",
-  "Network graphs reveal community relationship clusters that relational tables miss 🔍",
-  "The shift towards local-first software and edge computing is accelerating fast 🌐",
-  "Enjoying the morning breeze before diving into pull request reviews 🌅",
-  "Building robust forensics tools requires obsessive attention to hash integrity 🛠️",
+  "Attending the developer keynote session live. Excited for the new open-source releases.",
+  "Quick productivity rule: block 2 uninterrupted hours daily for deep focused tasks.",
+  "Network graphs reveal community relationship clusters that relational tables miss.",
+  "The shift towards local-first software and edge computing is accelerating fast.",
+  "Enjoying the morning breeze before diving into pull request reviews.",
+  "Building robust forensics tools requires obsessive attention to hash integrity.",
   "Zero-trust architecture isn't a feature, it is an operating mindset."
 ];
 
@@ -133,7 +133,7 @@ async function computeRealSHA256(message) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Generate Fixed Profile Data for ANY Name (with Logical Forensic Alibi & Metadata Mismatches)
+// Generate Fixed Profile Data for ANY Name (with Clear English Reasons)
 function generateForensicProfile(inputName) {
   const name = inputName.trim() || "Annu Gill";
   const seedInt = stringToSeed(name);
@@ -187,7 +187,7 @@ function generateForensicProfile(inputName) {
       frequentContact: `@${topContact}`,
       suspiciousComment: `[@${topContact}]: "${commentObj.text}"`,
       commentReason: commentObj.reason,
-      postReason: `Geolocation Alibi Mismatch: Post claims subject was at ${loc.name}, but active cell logs and comment thread confirm subject was in an undisclosed meeting with @${topContact}.`,
+      postReason: `Target coordinated an off-the-record file transfer and private meeting at ${loc.name} with @${topContact}.`,
       threatFlag: isSuspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL POST",
       isSuspicious: isSuspicious,
       likes: 120 + Math.floor(rng() * 450),
@@ -218,7 +218,7 @@ function generateForensicProfile(inputName) {
       frequentContact: `@${topContact}`,
       suspiciousComment: `[@${topContact}]: "${commentObj.text}"`,
       commentReason: commentObj.reason,
-      postReason: `Timeline Contradiction: Published at ${hour}:${minute} IST while suspect's other verified handle was simultaneously logged active on a private IP in another district.`,
+      postReason: `Anomalous late-night activity logged at ${hour}:${minute} involving secretive direct communication.`,
       threatFlag: isSuspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL POST",
       isSuspicious: isSuspicious,
       likes: 90 + Math.floor(rng() * 380),
@@ -249,7 +249,7 @@ function generateForensicProfile(inputName) {
       frequentContact: `@${topContact}`,
       suspiciousComment: `[@${topContact}]: "${commentObj.text}"`,
       commentReason: commentObj.reason,
-      postReason: `Coded Peer Signal: Suspect publicly broadcasted a message tagging @${topContact}, triggering direct encrypted file/passcode transfers in backchannels.`,
+      postReason: `Public handle used to transmit coded coordination signals while explicitly tagging associate @${topContact}.`,
       threatFlag: isSuspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL POST",
       isSuspicious: isSuspicious,
       likes: 85 + Math.floor(rng() * 520),
@@ -377,7 +377,7 @@ async function runCollectionAction() {
   setTimeout(() => switchTab('vault'), 700);
 }
 
-// 03 Vault Render (Locked Grid Alignment + Non-Breaking Floating Tooltip on Hover)
+// 03 Vault Render (Hover Tooltip with Reduced Emojis)
 function renderVault() {
   const stats = document.getElementById('vaultStats');
   const suspiciousCount = state.evidence.filter(e => e.isSuspicious).length;
@@ -407,18 +407,18 @@ function renderVault() {
       <div class="ev-cell-content">
         <div class="ev-text">
           <b>[${ev.id}]</b> "${ev.content}"
-          ${ev.isSuspicious ? ` <span class="tag suspicious-tag">🚨 FLAGGED</span>` : ''}
+          ${ev.isSuspicious ? ` <span class="tag suspicious-tag">FLAGGED</span>` : ''}
         </div>
 
         <div class="ev-tooltip">
           <div class="tip-title"><b>[${ev.id}]</b> "${ev.content}"</div>
           ${ev.isSuspicious ? `
             <div class="tip-reason">
-              <b>🚨 Why Suspicious:</b> ${ev.postReason}
+              <b>Why Suspicious:</b> ${ev.postReason}
             </div>
           ` : `
             <div style="font-size:11.5px; color:var(--ink-dim);">
-              ✓ Normal artifact log verified with no security anomalies.
+              Verified artifact log with no security anomalies.
             </div>
           `}
         </div>
@@ -427,7 +427,7 @@ function renderVault() {
       <div class="hash" title="${ev.hash}">${short(ev.hash)}</div>
       <div style="color:var(--ink-faint); font-size:11.5px;">${fmtTime(ev.time)}</div>
       <div class="verified" style="${ev.isSuspicious ? 'color:#EF4444;' : ''}">
-        ${ev.isSuspicious ? '⚠ SUSPICIOUS' : '✓ NORMAL'}
+        ${ev.isSuspicious ? 'SUSPICIOUS' : 'VERIFIED'}
       </div>
     `;
     list.appendChild(row);
@@ -438,7 +438,7 @@ function verifyHashesAction() {
   toast("Cryptographic Integrity Audit: 0 Alterations Detected / 100% Intact");
 }
 
-// 04 Timeline Render (Explains WHY MESSAGE/COMMENT is suspicious in clear English with hover expand)
+// 04 Timeline Render with Clean Professional Labels
 function renderTimeline() {
   const el = document.getElementById('timelineList');
   if (!el) return;
@@ -452,16 +452,16 @@ function renderTimeline() {
       <div class="tl-time">${fmtTime(ev.time)} · <b>${ev.id}</b> (${ev.platform})</div>
       <div class="tl-body">
         <div style="color:var(--amber); font-weight:600; font-size:12px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
-          <span><b>${ev.handle}</b> · 📍 ${ev.location} · Likes: ${ev.likes} ${ev.retweets ? '· Retweets: ' + ev.retweets : ''}</span>
-          ${ev.isSuspicious ? '<span style="color:#EF4444; font-weight:700; font-family:var(--mono); font-size:11px;">🚨 SUSPICIOUS POST</span>' : ''}
+          <span><b>${ev.handle}</b> · ${ev.location} · Likes: ${ev.likes} ${ev.retweets ? '· Retweets: ' + ev.retweets : ''}</span>
+          ${ev.isSuspicious ? '<span style="color:#EF4444; font-weight:700; font-family:var(--mono); font-size:11px;">[FLAGGED] ' + ev.threatFlag + '</span>' : ''}
         </div>
         <div style="font-size:13.5px; color:var(--ink); line-height:1.5; margin-bottom:8px;">"${ev.content}"</div>
         
-        <!-- Hover Pop-out Box with Clear English Reason -->
+        <!-- Hover Pop-out Box with Clean Labels -->
         ${ev.isSuspicious ? `
           <div class="comment-box" title="Hover to view full message and forensic reason">
-            <div><b>🚨 Intercepted Chat / Comment:</b> ${ev.suspiciousComment}</div>
-            <div class="threat-reason-pill"><b>Why This Comment Is Suspicious:</b> ${ev.commentReason}</div>
+            <div><b>Intercepted Comment:</b> ${ev.suspiciousComment}</div>
+            <div class="threat-reason-pill"><b>Suspicion Trigger:</b> ${ev.commentReason}</div>
           </div>
         ` : ''}
 
@@ -695,7 +695,7 @@ async function downloadForensicPDF() {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...accent);
-    doc.text('◎ CERTIFICATE OF AUTHENTICITY (SECTION 63B BHARATIYA SAKSHYA ADHINIYAM)', 18, finalY + 8);
+    doc.text('CERTIFICATE OF AUTHENTICITY (SECTION 63B BHARATIYA SAKSHYA ADHINIYAM)', 18, finalY + 8);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
