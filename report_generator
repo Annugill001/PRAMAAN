@@ -1,0 +1,139 @@
+import os
+from datetime import datetime, timezone
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+REPORTS_DIR = "./reports"
+os.makedirs(REPORTS_DIR, exist_ok=True)
+
+def generate_forensic_pdf(case_data: dict, evidence_list: list, custody_logs: list) -> str:
+    case_id = case_data.get("case_id", "CASE_REPORT")
+    file_path = os.path.join(REPORTS_DIR, f"{case_id}_Forensic_Report.pdf")
+    
+    doc = SimpleDocTemplate(
+        file_path,
+        pagesize=A4,
+        rightMargin=36,
+        leftMargin=36,
+        topMargin=36,
+        bottomMargin=36
+    )
+    
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'DocTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        leading=22,
+        textColor=colors.HexColor("#1A2B3C")
+    )
+    section_style = ParagraphStyle(
+        'SectionHeading',
+        parent=styles['Heading2'],
+        fontSize=13,
+        leading=16,
+        textColor=colors.HexColor("#2C3E50"),
+        spaceBefore=14,
+        spaceAfter=6
+    )
+    body_style = ParagraphStyle(
+        'Body',
+        parent=styles['Normal'],
+        fontSize=9,
+        leading=12,
+        textColor=colors.HexColor("#2C3E50")
+    )
+    mono_style = ParagraphStyle(
+        'MonoText',
+        parent=styles['Normal'],
+        fontName='Courier',
+        fontSize=7.5,
+        leading=9.5,
+        textColor=colors.HexColor("#333333")
+    )
+    
+    story = []
+    
+    # 1. Header
+    story.append(Paragraph("<b>PRAMAAN — Digital Forensic Investigation Report</b>", title_style))
+    story.append(Paragraph(f"Generated at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}", body_style))
+    story.append(Spacer(1, 10))
+    
+    # 2. Case Details Table
+    story.append(Paragraph("<b>1. Investigation Details</b>", section_style))
+    case_table_data = [
+        [Paragraph("<b>Case ID</b>", body_style), Paragraph(case_data.get("case_id", "N/A"), body_style)],
+        [Paragraph("<b>Investigating Officer</b>", body_style), Paragraph(f"{case_data.get('investigator')} (Badge: {case_data.get('badge')})", body_style)],
+        [Paragraph("<b>Target Account</b>", body_style), Paragraph(f"{case_data.get('target_handle')} ({case_data.get('platform')})", body_style)],
+        [Paragraph("<b>Legal Authorization</b>", body_style), Paragraph(case_data.get("notes", "N/A"), body_style)],
+        [Paragraph("<b>Compliance Reference</b>", body_style), Paragraph("Sec 63B Bharatiya Sakshya Adhiniyam / Indian Evidence Act", body_style)],
+    ]
+    t_case = Table(case_table_data, colWidths=[150, 370])
+    t_case.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F8F9FA")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#D3D3D3")),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+    ]))
+    story.append(t_case)
+    story.append(Spacer(1, 12))
+    
+    # 3. Evidence Register
+    story.append(Paragraph("<b>2. Cryptographic Evidence Register</b>", section_style))
+    ev_table_data = [[
+        Paragraph("<b>ID</b>", body_style),
+        Paragraph("<b>Type</b>", body_style),
+        Paragraph("<b>Extracted Content</b>", body_style),
+        Paragraph("<b>SHA-256 Hash</b>", body_style)
+    ]]
+    
+    for ev in evidence_list:
+        content_preview = ev.get("content", "")[:50] + "..." if len(ev.get("content", "")) > 50 else ev.get("content", "")
+        ev_table_data.append([
+            Paragraph(ev.get("evidence_id", ""), body_style),
+            Paragraph(ev.get("evidence_type", ""), body_style),
+            Paragraph(content_preview, body_style),
+            Paragraph(ev.get("hash", "")[:32] + "...", mono_style)
+        ])
+        
+    t_ev = Table(ev_table_data, colWidths=[65, 65, 230, 160])
+    t_ev.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#EAECEE")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#BDC3C7")),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+    ]))
+    story.append(t_ev)
+    story.append(Spacer(1, 12))
+    
+    # 4. Chain of Custody
+    story.append(Paragraph("<b>3. Hash-Chained Audit Trail (Chain of Custody)</b>", section_style))
+    custody_data = [[
+        Paragraph("<b>Timestamp</b>", body_style),
+        Paragraph("<b>Actor</b>", body_style),
+        Paragraph("<b>Action & Detail</b>", body_style),
+        Paragraph("<b>Entry Hash</b>", body_style)
+    ]]
+    
+    for log in custody_logs:
+        custody_data.append([
+            Paragraph(log.get("timestamp", "")[:19].replace("T", " "), body_style),
+            Paragraph(log.get("actor", ""), body_style),
+            Paragraph(f"<b>{log.get('action')}:</b> {log.get('detail')[:40]}", body_style),
+            Paragraph(log.get("entry_hash", "")[:24] + "...", mono_style)
+        ])
+        
+    t_custody = Table(custody_data, colWidths=[90, 80, 210, 140])
+    t_custody.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#EAECEE")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#BDC3C7")),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+    ]))
+    story.append(t_custody)
+    
+    doc.build(story)
+    return file_path

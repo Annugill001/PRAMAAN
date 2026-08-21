@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRAMAAN — Digital Forensic Evidence Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Link to External CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="brand">
+    <div class="mark"><span class="dot"></span>PRAMAAN</div>
+    <div class="sub">Digital Forensic Platform</div>
+  </div>
+  <div class="nav">
+    <button data-tab="setup" class="active"><span class="num">01</span>Case Setup</button>
+    <button data-tab="collect" disabled><span class="num">02</span>Data Collection</button>
+    <button data-tab="vault" disabled><span class="num">03</span>Evidence Vault</button>
+    <button data-tab="timeline" disabled><span class="num">04</span>Timeline</button>
+    <button data-tab="graph" disabled><span class="num">05</span>Relationships</button>
+    <button data-tab="custody" disabled><span class="num">06</span>Chain of Custody</button>
+    <button data-tab="report" disabled><span class="num">07</span>Report</button>
+  </div>
+  <div class="case-chip" id="caseChip" style="display:none;">
+    <div class="lbl">Active Case</div>
+    <div class="val" id="caseChipVal">—</div>
+  </div>
+</div>
+
+<main>
+  <!-- Step 01: Setup -->
+  <section id="tab-setup">
+    <div class="page-head">
+      <div>
+        <div class="eyebrow">Step 01</div>
+        <h1>Initiate Case</h1>
+        <p>Register a new investigation before evidence collection begins.</p>
+      </div>
+    </div>
+    <div class="card" style="max-width:640px;">
+      <div class="grid2">
+        <div>
+          <label>Investigator Name</label>
+          <input id="inInvestigator" placeholder="e.g. Insp. R. Sharma">
+        </div>
+        <div>
+          <label>Badge / ID No.</label>
+          <input id="inBadge" placeholder="e.g. RJ-2291">
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label>Target Account / Handle</label>
+          <input id="inHandle" placeholder="@target_handle">
+        </div>
+        <div>
+          <label>Platform</label>
+          <select id="inPlatform">
+            <option>Instagram</option>
+            <option>X (Twitter)</option>
+            <option>Facebook</option>
+            <option>Telegram</option>
+            <option>Web URL</option>
+          </select>
+        </div>
+      </div>
+      <label>Case Notes / Legal Basis (Sec 63B BSA)</label>
+      <input id="inNotes" placeholder="e.g. Warrant No. 114/2026, Sec 91 CrPC">
+      <button class="btn" id="btnInitCase">Create Case →</button>
+    </div>
+  </section>
+
+  <!-- Step 02: Collect -->
+  <section id="tab-collect" style="display:none;">
+    <div class="page-head">
+      <div>
+        <div class="eyebrow">Step 02</div>
+        <h1>Data Collection Engine</h1>
+        <p>Captures live web endpoints via headless Playwright, extracts metadata, and records SHA-256 hashes.</p>
+      </div>
+      <button class="btn" id="btnCollect">Run Live Collection ⤓</button>
+    </div>
+    <div class="card">
+      <div id="collectLog" class="empty">
+        <div class="icon">◎</div>
+        Click <b>Run Live Collection</b> to trigger Playwright scraping and binary preservation on the backend.
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 03: Vault -->
+  <section id="tab-vault" style="display:none;">
+    <div class="page-head">
+      <div>
+        <div class="eyebrow">Step 03</div>
+        <h1>Evidence Vault</h1>
+        <p>Cryptographic hashes computed upon ingestion. Run verification to audit against on-disk files.</p>
+      </div>
+      <button class="btn secondary" id="btnVerifyAll">Run Full Integrity Audit</button>
+    </div>
+    <div class="stat-row" id="vaultStats"></div>
+    <div class="card" style="padding:0;">
+      <div class="ev-row head">
+        <div>Type</div><div>Extracted Content</div><div>SHA-256 Checksum</div><div>Timestamp</div><div>Status</div>
+      </div>
+      <div id="evList"></div>
+    </div>
+  </section>
+
+  <!-- Step 04: Timeline -->
+  <section id="tab-timeline" style="display:none;">
+    <div class="page-head">
+      <div>
+        <div class="eyebrow">Step 04</div>
+        <h1>Chronological Timeline</h1>
+        <p>Reconstructed chronological sequence of collected artifacts and events.</p>
+      </div>
+    </div>
+    <div class="card"><div class="tline" id="timelineList"></div></div>
+  </section>
+
+  <!-- Step 05: Graph -->
+  <section id="tab-graph" style="display:none;">
+    <div class="page-head">
+      <div>
+        <div class="eyebrow">Step 05</div>
+        <h1>Relationship & Face Analysis</h1>
+        <p>Interactive graph linking connected accounts with face similarity flags.</p>
+      </div>
+    </div>
+    <div class="card">
+      <canvas id="graphCanvas" width="1080" height="440"></canvas>
+      <div class="legend">
+        <span><i style="background:var(--amber);"></i>Target account</span>
+        <span><i style="background:var(--seal);"></i>Verified profile</span>
+        <span><i style="background:var(--alert);"></i>Flagged identity match</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 06: Custody -->
+  <section id="tab-custody" style="display:none;">
+    <div class="page-head">
+      <div>
+        <div class="eyebrow">Step 06</div>
+        <h1>Chain of Custody</h1>
+        <p>Immutable audit trail where every record incorporates the previous entry's cryptographic hash.</p>
+      </div>
+    </div>
+    <div class="card" style="padding:0;">
+      <div class="log-row head"><div>Timestamp</div><div>Actor</div><div>Action & Detail</div><div>Entry Hash</div></div>
+      <div id="custodyList"></div>
+    </div>
+  </section>
+
+  <!-- Step 07: Report -->
+  <section id="tab-report" style="display:none;">
+    <div class="page-head">
+      <div>
+        <div class="eyebrow">Step 07</div>
+        <h1>Forensic PDF Report</h1>
+        <p>Compiles court-admissible forensic packages with Section 63B compliance certification.</p>
+      </div>
+    </div>
+    <div class="card" style="max-width:560px;">
+      <p style="color:var(--ink-dim);font-size:13px;line-height:1.6;">Generates a standardized PDF summarizing registered evidence hashes, full chain-of-custody logs, and investigator declarations.</p>
+      <div class="badge-stamp" id="reportStamp" style="margin-bottom:16px;">◎ Backend Ready</div>
+      <br>
+      <button class="btn amber" id="btnReport">Download Forensic PDF ⇩</button>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- Link to External JavaScript -->
+<script src="app.js"></script>
+</body>
+</html>
+```[cite: 2]

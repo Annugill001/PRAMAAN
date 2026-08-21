@@ -1,0 +1,13 @@
+Pramaan/
+├── backend/
+│   ├── main.py              # FastAPI server (CORS, Endpoints, Hashing, Custody Verification)
+│   ├── collector.py         # Playwright headless browser capture & SHA-256 binary hasher
+│   └── report_generator.py  # ReportLab Section 63B Forensic PDF generator
+│
+├── frontend/
+│   ├── index.html           # Structure with <link href="style.css"> & <script src="app.js">
+│   ├── style.css            # Complete UI dark-mode theme & responsive layout
+│   └── app.js               # Pure JS fetch() requests connected to http://127.0.0.1:8000
+│
+├── evidence_store/          # Auto-created folder where screenshots are saved & hashed
+└── reports/                 # Auto-created folder where generated PDFs are stored
