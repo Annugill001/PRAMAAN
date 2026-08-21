@@ -22,81 +22,65 @@ function normalizeText(text) {
     .trim();
 }
 
-// --- Case Setup ---
-function initiateCaseAction() {
-  const enteredName = document.getElementById('inHandle').value || "Annu Gill";
-  activeTargetData = generateForensicProfile(enteredName);
-
-  state.caseId = activeTargetData.caseId;
-  state.investigator = document.getElementById('inInvestigator').value || "Insp. R. Sharma";
-  state.badge = document.getElementById('inBadge').value || "RJ-2291";
-
-  const chip = document.getElementById('caseChip');
-  const chipVal = document.getElementById('caseChipVal');
-  if (chip && chipVal) {
-    chip.style.display = 'block';
-    chipVal.textContent = state.caseId;
+// --- Evidence Summarizer ---
+function summarizeEvidence(ev, allPosts) {
+  // Detect repetition by normalized hash
+  const duplicates = allPosts.filter(p => p.normalizedHash === ev.normalizedHash);
+  if (duplicates.length > 2) {
+    return `Repeated theme: ${duplicates.length} posts like "${ev.content}" (different wording/emojis)`;
   }
 
-  state.custody = [];
-  logCustody("Case Initialization", state.investigator,
-    `Case ${state.caseId} initialized for target ${activeTargetData.person}`);
-  toast(`Case ${state.caseId} Created for ${activeTargetData.person}!`);
-  switchTab('collect');
+  // Flag anomalies
+  if (ev.likes && ev.likes > 400) {
+    return `Anomaly: unusually high engagement (${ev.likes} likes) — "${ev.content}"`;
+  }
+
+  // Add context
+  if (ev.location) {
+    return `${ev.content} · Location: ${ev.location}`;
+  }
+
+  return ev.content;
 }
 
-// --- Collect Action (dual-hash system + stats) ---
+// --- Collection Action (dual-hash system) ---
 async function runCollectionAction() {
-  const btn = document.getElementById('btnCollect');
-  btn.disabled = true;
-  btn.textContent = 'Ingesting & Computing SHA-256...';
+  toast("Running live collection…");
 
-  // Reset evidence for this target
-  state.evidence = [];
+  const activeTargetData = state.activeTargetData;
+  if (!activeTargetData || !activeTargetData.posts) return;
 
   const hashedPosts = [];
   for (const post of activeTargetData.posts) {
+    // Raw payload includes metadata for uniqueness
     const rawPayload = `${post.id}|${post.platform}|${post.time}|${post.location}|${post.content}|${post.meta}|${activeTargetData.person}`;
     const realHash = await computeRealSHA256(rawPayload);
 
-    // Normalized hash scoped to person
-    const normalizedPayload = `${activeTargetData.person}|${normalizeText(post.content)}`;
-    const normalizedHash = await computeRealSHA256(normalizedPayload);
+    // Normalized payload for duplicate detection
+    const normalizedHash = await computeRealSHA256(normalizeText(post.content));
 
-    hashedPosts.push({ ...post, hash: realHash, normalizedHash });
+    hashedPosts.push({ 
+      ...post, 
+      hash: realHash, 
+      normalizedHash: normalizedHash 
+    });
   }
 
   state.evidence = hashedPosts;
-
-  // Calculate stats
-  const totalCount = hashedPosts.length;
-  const uniqueCount = new Set(hashedPosts.map(p => p.normalizedHash)).size;
-  state.evidenceStats = { total: totalCount, unique: uniqueCount };
-
-  await logCustody("Identity Resolution", state.investigator,
-    `Resolved multi-platform accounts [IG: ${activeTargetData.profiles[0].handle}], [FB: ${activeTargetData.profiles[1].handle}], [X: ${activeTargetData.profiles[2].handle}] to subject ${activeTargetData.person}`);
-  await logCustody("Evidence Ingestion", state.investigator,
-    `Extracted ${state.evidenceStats.total} forensic artifacts (${state.evidenceStats.unique} unique after clustering) across 3 platforms with binary SHA-256 signatures`);
-
   renderVault();
   renderTimeline();
-  renderCustody();
-
-  btn.disabled = false;
-  btn.textContent = 'Extraction Complete ✓';
-  toast(`${state.evidenceStats.total} Forensic Records Ingested!`);
-  setTimeout(() => switchTab('vault'), 700);
+  toast("Collection complete. Evidence ingested.");
 }
 
-// --- Vault Render (shows total + unique) ---
+// --- Vault Renderer ---
 function renderVault() {
   const stats = document.getElementById('vaultStats');
   if (stats) {
     stats.innerHTML = `
-      <div class="stat"><div class="n">${state.evidenceStats.total}</div><div class="l">Evidence Items</div></div>
-      <div class="stat"><div class="n">${state.evidenceStats.unique}</div><div class="l">Unique After Clustering</div></div>
+      <div class="stat"><div class="n">${state.evidence.length}</div><div class="l">Evidence Items</div></div>
+      <div class="stat"><div class="n">${state.evidence.length}</div><div class="l">SHA-256 Verified</div></div>
       <div class="stat"><div class="n">0</div><div class="l">Tampered Items</div></div>
-      <div class="stat"><div class="n">${new Set(state.evidence.map(e => e.platform)).size}</div><div class="l">Linked Platforms</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">Linked Platforms</div></div>
     `;
   }
 
@@ -109,15 +93,43 @@ function renderVault() {
     row.className = 'ev-row';
     const tag = ev.platform.toLowerCase().includes('insta') ? 'instagram' :
                 ev.platform.toLowerCase().includes('face') ? 'facebook' : 'twitter';
+    const enrichedContent = summarizeEvidence(ev, state.evidence);
+
     row.innerHTML = `
       <div><span class="tag ${tag}">${ev.platform}</span></div>
       <div style="color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${ev.content}">
-        <b>[${ev.id}]</b> ${ev.content}
+        <b>[${ev.id}]</b> ${enrichedContent}
       </div>
-      <div class="hash" title="Raw: ${ev.hash}\nNormalized: ${ev.normalizedHash}">${short(ev.hash)}</div>
+      <div class="hash" title="Raw: ${ev.hash}\nNormalized: ${ev.normalizedHash}">
+        ${short(ev.hash)}
+      </div>
       <div style="color:var(--ink-faint); font-size:11.5px;">${fmtTime(ev.time)}</div>
       <div class="verified">✓ verified</div>
     `;
     list.appendChild(row);
+  });
+}
+
+// --- Timeline Renderer ---
+function renderTimeline() {
+  const el = document.getElementById('timelineList');
+  if (!el) return;
+  el.innerHTML = '';
+  state.evidence.forEach(ev => {
+    const enrichedContent = summarizeEvidence(ev, state.evidence);
+    const item = document.createElement('div');
+    item.className = 'tl-item';
+    item.innerHTML = `
+      <div class="tl-time">${fmtTime(ev.time)} · <b>${ev.id}</b> (${ev.platform})</div>
+      <div class="tl-body">
+        <div class="who"><b>${ev.handle}</b> · 📍 ${ev.location || '—'} · Likes: ${ev.likes || 0} ${ev.retweets ? '· Retweets: ' + ev.retweets : ''} · Comments: ${ev.commentsCount || 0}</div>
+        <div class="txt">"${enrichedContent}"</div>
+        <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); margin-top:6px; word-break:break-all;">
+          <b>Raw SHA-256:</b> ${ev.hash}<br>
+          <b>Normalized SHA-256:</b> ${ev.normalizedHash}
+        </div>
+      </div>
+    `;
+    el.appendChild(item);
   });
 }
