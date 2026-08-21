@@ -490,3 +490,189 @@ input:focus, select:focus {
   border-color: var(--seal);
   color: var(--seal);
 }
+/* Red Pulsing / Blinking Glow for Suspicious Posts */
+.tl-item.suspicious .tl-body {
+  border: 1px solid rgba(239, 68, 68, 0.8) !important;
+  background: rgba(45, 15, 20, 0.85) !important;
+  animation: redBluffPulse 1.8s infinite alternate ease-in-out;
+}
+
+.tl-item.suspicious::before {
+  background: #EF4444 !important;
+  box-shadow: 0 0 12px #EF4444 !important;
+}
+
+@keyframes redBluffPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(238, 81, 81, 0.4), inset 0 0 8px rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 24px rgba(246, 103, 103, 0.9), inset 0 0 16px rgba(239, 68, 68, 0.4);
+    border-color: #EF4444;
+  }
+}
+/* Red Glowing / Bluff Highlight for Suspicious Evidence Rows */
+.ev-row.suspicious-row {
+  background: rgba(239, 68, 68, 0.14) !important;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.5) !important;
+  box-shadow: inset 3px 0 0 #EF4444;
+  animation: redBluffPulse 2s infinite alternate ease-in-out;
+}
+
+.tag.suspicious-tag {
+  background: rgba(239, 68, 68, 0.25);
+  color: #F87171;
+  border: 1px solid #EF4444;
+}
+/* Truncated Comment & Hover Pop-out Box */
+.comment-box {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: #FCD34D;
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 3px solid #EF4444;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Hover par card thoda upar uthega aur pura text show karega */
+.comment-box:hover {
+  white-space: normal;
+  overflow: visible;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(239, 68, 68, 0.4);
+  background: rgba(45, 15, 20, 0.96) !important;
+  z-index: 10;
+}
+
+/* Threat Reason Pill Badge */
+.threat-reason-pill {
+  display: inline-block;
+  font-size: 10.5px;
+  font-family: var(--mono);
+  background: rgba(239, 68, 68, 0.25);
+  color: #FCA5A5;
+  border: 1px solid #EF4444;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+/* Evidence Vault Content Container */
+.ev-content-box {
+  color: var(--ink);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+
+/* Default Single Line Truncate */
+.ev-text-preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+/* Hover Zoom-in / Pop-out Effect */
+.ev-content-box:hover {
+  white-space: normal;
+  overflow: visible;
+  transform: scale(1.03) translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.8), 0 0 14px rgba(239, 68, 68, 0.35);
+  background: rgba(22, 27, 34, 0.98) !important;
+  z-index: 100;
+}
+
+.ev-content-box:hover .ev-text-preview {
+  white-space: normal;
+}
+
+/* Suspicious Vault Reason Tag inside Hover Card */
+.vault-reason-badge {
+  font-size: 11.5px;
+  font-family: var(--mono);
+  color: #FCA5A5;
+  background: rgba(239, 68, 68, 0.2);
+  border-left: 3px solid #EF4444;
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+/* Prevent any column from stretching or pushing next columns */
+.ev-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 160px 140px 110px;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.ev-row > div {
+  min-width: 0; /* Strict grid containment - never expands columns */
+}
+
+/* Second Column Container */
+.ev-cell-content {
+  position: relative;
+  cursor: pointer;
+}
+
+.ev-cell-content .ev-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+/* Floating Clean Tooltip (Does NOT disturb table columns) */
+.ev-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 360px;
+  background: #151B23;
+  border: 1px solid #EF4444;
+  border-radius: 6px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.9), 0 0 12px rgba(239, 68, 68, 0.35);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.ev-cell-content:hover .ev-tooltip {
+  display: block;
+}
+
+.ev-tooltip .tip-title {
+  color: #FCD34D;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.ev-tooltip .tip-reason {
+  font-size: 11.5px;
+  font-family: var(--mono);
+  color: #FCA5A5;
+  background: rgba(239, 68, 68, 0.18);
+  border-left: 3px solid #EF4444;
+  padding: 6px 8px;
+  border-radius: 4px;
+  line-height: 1.4;
+  white-space: normal;
+}

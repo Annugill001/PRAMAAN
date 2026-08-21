@@ -159,17 +159,18 @@
       <div class="grid2">
         <div>
           <label>Investigator Name</label>
-          <input id="inInvestigator" value="Insp. xyz">
+          <input id="inInvestigator" value=""
+          placeholder="Enter Investigator Name">
         </div>
         <div>
           <label>Badge / ID No.</label>
-          <input id="inBadge" value="RJ-2291">
+          <input id="inBadge" value="" placeholder="eg : RJ-2291">
         </div>
       </div>
       
       <label>Target Account</label>
 
-      <input id="inHandle" value="@xy_az" placeholder="Type any target name or select above...">
+      <input id="inHandle" value="" placeholder="Type any target name or select above...">
 
       <label>Investigation Scope</label>
       <select id="inPlatform">
@@ -180,7 +181,7 @@
       </select>
 
       <label>Legal Authorization Basis</label>
-      <input id="inNotes" value="eg Warrant No. 114/2026">
+      <input id="inNotes" placeholder="eg Warrant No. 114/2026">
       <button type="button" class="btn" onclick="initiateCaseAction()">Create Case & Link Target →</button>
     </div>
   </section>

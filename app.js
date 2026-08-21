@@ -73,6 +73,34 @@ const bankTW = [
   "Zero-trust architecture isn't a feature, it is an operating mindset."
 ];
 
+// Natural, Plain-English Suspicious Comments and Reasons
+const bankSuspiciousComments = [
+  { 
+    text: "Work is done. Left the parcel at the designated drop spot, go check it.", 
+    reason: "Suspect was instructed about a secret physical drop-off and unverified parcel handover." 
+  },
+  { 
+    text: "Delete this message immediately after reading, contact me on the burner number.", 
+    reason: "Deliberate attempt to destroy chat history and switch to an untraceable burner line." 
+  },
+  { 
+    text: "Sent the confidential files and passwords to your secondary private handle.", 
+    reason: "Unauthorized transmission of confidential files and passwords to a secondary account." 
+  },
+  { 
+    text: "Let's meet at the secret location tonight at 11 PM without telling anyone.", 
+    reason: "Planning an undisclosed late-night meeting without leaving official digital traces." 
+  },
+  { 
+    text: "Payment transfer is confirmed off-the-books, verify the secret code.", 
+    reason: "Secret, unrecorded payment confirmation executed through private transaction channels." 
+  },
+  { 
+    text: "Cyber monitoring is active in this area, turn your phone off right now.", 
+    reason: "Direct instruction to evade law enforcement surveillance and cellular location tracking." 
+  }
+];
+
 const bankLocations = [
   { name: "Connaught Place, Delhi", gps: "28.6315° N, 77.2167° E", isp: "Airtel Xstream (AS9498)" },
   { name: "Bandra West, Mumbai", gps: "19.0596° N, 72.8295° E", isp: "Jio True5G (AS55836)" },
@@ -105,36 +133,49 @@ async function computeRealSHA256(message) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Generate Fixed Profile Data for ANY Name
+// Generate Fixed Profile Data for ANY Name (with Logical Forensic Alibi & Metadata Mismatches)
 function generateForensicProfile(inputName) {
   const name = inputName.trim() || "Annu Gill";
   const seedInt = stringToSeed(name);
   const rng = createPRNG(seedInt);
   const cleanHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '');
 
-  // Shuffled unique pools specifically for this person
   const shuffledIG = seededShuffle(bankIG, rng);
   const shuffledFB = seededShuffle(bankFB, rng);
   const shuffledTW = seededShuffle(bankTW, rng);
   const shuffledContacts = seededShuffle(bankContacts, rng).slice(0, 6);
 
+  const contactStats = shuffledContacts.map(c => {
+    const totalInteractions = 8 + Math.floor(rng() * 18);
+    const suspiciousComments = 3 + Math.floor(rng() * 7);
+    return {
+      handle: `@${c}`,
+      totalInteractions,
+      suspiciousComments,
+      riskLevel: totalInteractions > 15 ? "HIGH RISK ASSOCIATE" : "REGULAR CONTACT",
+      lastKnownCoord: bankLocations[Math.floor(rng() * bankLocations.length)].name
+    };
+  });
+
   const posts = [];
   let itemCounter = 1;
 
-  // Dynamically computed count per platform from seed
-  const countIG = 3 + Math.floor(rng() * 5); // 3 to 7 items
-  const countFB = 2 + Math.floor(rng() * 4); // 2 to 5 items
-  const countTW = 3 + Math.floor(rng() * 6); // 3 to 8 items
+  const countIG = 3 + Math.floor(rng() * 5);
+  const countFB = 2 + Math.floor(rng() * 4);
+  const countTW = 3 + Math.floor(rng() * 6);
 
   // Instagram Items
   for (let i = 0; i < countIG; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
     const dev = bankDevices[Math.floor(rng() * bankDevices.length)];
+    const topContact = shuffledContacts[i % shuffledContacts.length];
+    const commentObj = bankSuspiciousComments[Math.floor(rng() * bankSuspiciousComments.length)];
     const month = 1 + Math.floor(rng() * 12);
     const day = 1 + Math.floor(rng() * 27);
     const year = month > 8 ? 2025 : 2026;
-    const hour = String(9 + Math.floor(rng() * 12)).padStart(2, '0');
+    const hour = String(22 + Math.floor(rng() * 3) % 24).padStart(2, '0');
     const minute = String(10 + Math.floor(rng() * 48)).padStart(2, '0');
+    const isSuspicious = (i % 3 === 1);
 
     posts.push({
       id: `IG${String(itemCounter++).padStart(5, '0')}`,
@@ -143,6 +184,12 @@ function generateForensicProfile(inputName) {
       time: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${hour}:${minute}:00`,
       content: shuffledIG[i % shuffledIG.length],
       location: loc.name,
+      frequentContact: `@${topContact}`,
+      suspiciousComment: `[@${topContact}]: "${commentObj.text}"`,
+      commentReason: commentObj.reason,
+      postReason: `Geolocation Alibi Mismatch: Post claims subject was at ${loc.name}, but active cell logs and comment thread confirm subject was in an undisclosed meeting with @${topContact}.`,
+      threatFlag: isSuspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL POST",
+      isSuspicious: isSuspicious,
       likes: 120 + Math.floor(rng() * 450),
       commentsCount: 4 + Math.floor(rng() * 14),
       meta: `Exif: ${dev} · GPS: ${loc.gps} · Network: ${loc.isp}`
@@ -152,11 +199,14 @@ function generateForensicProfile(inputName) {
   // Facebook Items
   for (let i = 0; i < countFB; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
+    const topContact = shuffledContacts[(i + 1) % shuffledContacts.length];
+    const commentObj = bankSuspiciousComments[Math.floor(rng() * bankSuspiciousComments.length)];
     const month = 1 + Math.floor(rng() * 12);
     const day = 1 + Math.floor(rng() * 27);
     const year = month > 8 ? 2025 : 2026;
-    const hour = String(10 + Math.floor(rng() * 11)).padStart(2, '0');
+    const hour = String(23 + Math.floor(rng() * 3) % 24).padStart(2, '0');
     const minute = String(10 + Math.floor(rng() * 48)).padStart(2, '0');
+    const isSuspicious = (i % 2 === 1);
 
     posts.push({
       id: `FB${String(itemCounter++).padStart(5, '0')}`,
@@ -165,6 +215,12 @@ function generateForensicProfile(inputName) {
       time: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${hour}:${minute}:00`,
       content: shuffledFB[i % shuffledFB.length],
       location: loc.name,
+      frequentContact: `@${topContact}`,
+      suspiciousComment: `[@${topContact}]: "${commentObj.text}"`,
+      commentReason: commentObj.reason,
+      postReason: `Timeline Contradiction: Published at ${hour}:${minute} IST while suspect's other verified handle was simultaneously logged active on a private IP in another district.`,
+      threatFlag: isSuspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL POST",
+      isSuspicious: isSuspicious,
       likes: 90 + Math.floor(rng() * 380),
       commentsCount: 5 + Math.floor(rng() * 18),
       meta: `IP: 103.21.${Math.floor(rng() * 240)}.${Math.floor(rng() * 240)} · Client: Facebook Web · 2FA Verified`
@@ -174,20 +230,28 @@ function generateForensicProfile(inputName) {
   // X/Twitter Items
   for (let i = 0; i < countTW; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
-    const mention = shuffledContacts[i % shuffledContacts.length];
+    const topContact = shuffledContacts[(i + 2) % shuffledContacts.length];
+    const commentObj = bankSuspiciousComments[Math.floor(rng() * bankSuspiciousComments.length)];
     const month = 1 + Math.floor(rng() * 12);
     const day = 1 + Math.floor(rng() * 27);
     const year = month > 8 ? 2025 : 2026;
-    const hour = String(8 + Math.floor(rng() * 14)).padStart(2, '0');
+    const hour = String(1 + Math.floor(rng() * 4)).padStart(2, '0');
     const minute = String(10 + Math.floor(rng() * 48)).padStart(2, '0');
+    const isSuspicious = (i % 2 === 0);
 
     posts.push({
       id: `TW${String(itemCounter++).padStart(5, '0')}`,
       platform: "X (Twitter)",
       handle: `@${cleanHandle}`,
       time: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${hour}:${minute}:00`,
-      content: `${shuffledTW[i % shuffledTW.length]} (cc: @${mention})`,
+      content: isSuspicious ? `${shuffledTW[i % shuffledTW.length]} (cc: @${topContact})` : shuffledTW[i % shuffledTW.length],
       location: loc.name,
+      frequentContact: `@${topContact}`,
+      suspiciousComment: `[@${topContact}]: "${commentObj.text}"`,
+      commentReason: commentObj.reason,
+      postReason: `Coded Peer Signal: Suspect publicly broadcasted a message tagging @${topContact}, triggering direct encrypted file/passcode transfers in backchannels.`,
+      threatFlag: isSuspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL POST",
+      isSuspicious: isSuspicious,
       likes: 85 + Math.floor(rng() * 520),
       retweets: 12 + Math.floor(rng() * 70),
       commentsCount: 3 + Math.floor(rng() * 12),
@@ -206,6 +270,7 @@ function generateForensicProfile(inputName) {
       { platform: "Facebook", handle: name, friends: 380 + Math.floor(rng() * 680), groups: ["Community Network", "City Explorers"] },
       { platform: "X (Twitter)", handle: `@${cleanHandle}`, followers: 620 + Math.floor(rng() * 1900), following: 100 + Math.floor(rng() * 200) }
     ],
+    contactAnalysis: contactStats,
     sharedContacts: shuffledContacts,
     posts: posts.sort((a, b) => new Date(b.time) - new Date(a.time))
   };
@@ -283,7 +348,7 @@ async function runCollectionAction() {
   // Compute Real Cryptographic SHA-256 for each unique post
   const hashedPosts = [];
   for (const post of activeTargetData.posts) {
-    const rawPayload = `${post.id}|${post.platform}|${post.time}|${post.location}|${post.content}|${post.meta}|${activeTargetData.person}`;
+    const rawPayload = `${post.id}|${post.platform}|${post.time}|${post.location}|${post.content}|${post.meta}|${activeTargetData.person}|${post.threatFlag}`;
     const realHash = await computeRealSHA256(rawPayload);
     hashedPosts.push({ ...post, hash: realHash });
   }
@@ -312,14 +377,16 @@ async function runCollectionAction() {
   setTimeout(() => switchTab('vault'), 700);
 }
 
-// 03 Vault Render
+// 03 Vault Render (Locked Grid Alignment + Non-Breaking Floating Tooltip on Hover)
 function renderVault() {
   const stats = document.getElementById('vaultStats');
+  const suspiciousCount = state.evidence.filter(e => e.isSuspicious).length;
+
   if (stats) {
     stats.innerHTML = `
-      <div class="stat"><div class="n">${state.evidence.length}</div><div class="l">Evidence Items</div></div>
+      <div class="stat"><div class="n">${state.evidence.length}</div><div class="l">Total Artifacts</div></div>
       <div class="stat"><div class="n">${state.evidence.length}</div><div class="l">SHA-256 Verified</div></div>
-      <div class="stat"><div class="n">0</div><div class="l">Tampered Items</div></div>
+      <div class="stat"><div class="n" style="color:#EF4444;">${suspiciousCount}</div><div class="l">Flagged Suspicious</div></div>
       <div class="stat"><div class="n">3</div><div class="l">Linked Platforms</div></div>
     `;
   }
@@ -330,14 +397,38 @@ function renderVault() {
 
   state.evidence.forEach(ev => {
     const row = document.createElement('div');
-    row.className = 'ev-row';
+    row.className = `ev-row ${ev.isSuspicious ? 'suspicious-row' : ''}`;
     const tag = ev.platform.toLowerCase().includes('insta') ? 'instagram' : ev.platform.toLowerCase().includes('face') ? 'facebook' : 'twitter';
+    
     row.innerHTML = `
       <div><span class="tag ${tag}">${ev.platform}</span></div>
-      <div style="color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${ev.content}"><b>[${ev.id}]</b> ${ev.content}</div>
+      
+      <!-- Content Cell with Embedded Floating Tooltip -->
+      <div class="ev-cell-content">
+        <div class="ev-text">
+          <b>[${ev.id}]</b> "${ev.content}"
+          ${ev.isSuspicious ? ` <span class="tag suspicious-tag">🚨 FLAGGED</span>` : ''}
+        </div>
+
+        <div class="ev-tooltip">
+          <div class="tip-title"><b>[${ev.id}]</b> "${ev.content}"</div>
+          ${ev.isSuspicious ? `
+            <div class="tip-reason">
+              <b>🚨 Why Suspicious:</b> ${ev.postReason}
+            </div>
+          ` : `
+            <div style="font-size:11.5px; color:var(--ink-dim);">
+              ✓ Normal artifact log verified with no security anomalies.
+            </div>
+          `}
+        </div>
+      </div>
+
       <div class="hash" title="${ev.hash}">${short(ev.hash)}</div>
       <div style="color:var(--ink-faint); font-size:11.5px;">${fmtTime(ev.time)}</div>
-      <div class="verified">✓ verified</div>
+      <div class="verified" style="${ev.isSuspicious ? 'color:#EF4444;' : ''}">
+        ${ev.isSuspicious ? '⚠ SUSPICIOUS' : '✓ NORMAL'}
+      </div>
     `;
     list.appendChild(row);
   });
@@ -347,23 +438,35 @@ function verifyHashesAction() {
   toast("Cryptographic Integrity Audit: 0 Alterations Detected / 100% Intact");
 }
 
-// 04 Timeline Render
+// 04 Timeline Render (Explains WHY MESSAGE/COMMENT is suspicious in clear English with hover expand)
 function renderTimeline() {
   const el = document.getElementById('timelineList');
   if (!el) return;
   el.innerHTML = '';
+
   state.evidence.forEach(ev => {
     const item = document.createElement('div');
-    item.className = 'tl-item';
+    item.className = `tl-item ${ev.isSuspicious ? 'suspicious' : ''}`;
+
     item.innerHTML = `
       <div class="tl-time">${fmtTime(ev.time)} · <b>${ev.id}</b> (${ev.platform})</div>
       <div class="tl-body">
-        <div style="color:var(--amber); font-weight:600; font-size:12px; margin-bottom:4px;">
-          <b>${ev.handle}</b> · 📍 ${ev.location} · Likes: ${ev.likes} ${ev.retweets ? '· Retweets: ' + ev.retweets : ''} · Comments: ${ev.commentsCount}
+        <div style="color:var(--amber); font-weight:600; font-size:12px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+          <span><b>${ev.handle}</b> · 📍 ${ev.location} · Likes: ${ev.likes} ${ev.retweets ? '· Retweets: ' + ev.retweets : ''}</span>
+          ${ev.isSuspicious ? '<span style="color:#EF4444; font-weight:700; font-family:var(--mono); font-size:11px;">🚨 SUSPICIOUS POST</span>' : ''}
         </div>
-        <div style="font-size:13.5px; color:var(--ink); line-height:1.5; margin-bottom:6px;">"${ev.content}"</div>
+        <div style="font-size:13.5px; color:var(--ink); line-height:1.5; margin-bottom:8px;">"${ev.content}"</div>
+        
+        <!-- Hover Pop-out Box with Clear English Reason -->
+        ${ev.isSuspicious ? `
+          <div class="comment-box" title="Hover to view full message and forensic reason">
+            <div><b>🚨 Intercepted Chat / Comment:</b> ${ev.suspiciousComment}</div>
+            <div class="threat-reason-pill"><b>Why This Comment Is Suspicious:</b> ${ev.commentReason}</div>
+          </div>
+        ` : ''}
+
         <div style="font-family:var(--mono); font-size:11px; color:#A0AEC0; background:rgba(0,0,0,0.25); padding:6px 8px; border-radius:4px;">
-          <b>Forensic Metadata:</b> ${ev.meta}
+          <b>Device Details:</b> ${ev.meta}
         </div>
         <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); margin-top:6px; word-break:break-all;">
           <b>SHA-256 Signature:</b> ${ev.hash}
@@ -507,10 +610,11 @@ async function downloadForensicPDF() {
   doc.setDrawColor(200, 200, 200);
   doc.line(14, 50, 196, 50);
 
+  // Section 1: Resolved Multi-Platform Profiles
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...primary);
-  doc.text('1. RESOLVED TARGET PROFILES', 14, 57);
+  doc.text('1. RESOLVED TARGET PROFILES & FREQUENT INTERACTORS', 14, 57);
 
   const profileRows = activeTargetData.profiles.map(p => [
     p.platform,
@@ -532,23 +636,23 @@ async function downloadForensicPDF() {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...primary);
-    doc.text('2. CRYPTOGRAPHIC EVIDENCE MANIFEST & INTEGRITY VAULT', 14, nextY);
+    doc.text('2. EVIDENCE MANIFEST WITH THREAT REASONS', 14, nextY);
 
     const evRows = state.evidence.map(e => [
       e.id,
       e.platform,
-      e.content.slice(0, 45) + (e.content.length > 45 ? '...' : ''),
-      e.hash.slice(0, 20) + '...',
-      'INTEGRITY VERIFIED'
+      `${e.content.slice(0, 30)}...\n[Reason: ${e.postReason.slice(0, 35)}...]`,
+      e.hash.slice(0, 18) + '...',
+      e.isSuspicious ? 'SUSPICIOUS' : 'NORMAL'
     ]);
 
     doc.autoTable({
       startY: nextY + 4,
-      head: [['ID', 'Platform', 'Extracted Payload Summary', 'SHA-256 Signature', 'Status']],
+      head: [['ID', 'Platform', 'Payload & Investigation Reason', 'SHA-256 Signature', 'Status']],
       body: evRows,
       theme: 'striped',
       headStyles: { fillColor: [40, 50, 65], textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 7.5 }
+      styles: { fontSize: 7 }
     });
 
     nextY = doc.lastAutoTable.finalY + 8;
@@ -627,7 +731,7 @@ CROSS-PLATFORM SHARED NETWORK NODES
 
 CRYPTOGRAPHIC EVIDENCE MANIFEST (SHA-256 HASH REGISTER)
 --------------------------------------------------------------------------------
-${state.evidence.map(e => `[${e.platform}] ID: ${e.id} | Timestamp: ${e.time} | Location: ${e.location}\nContent: "${e.content}"\nTelemetry Metadata: ${e.meta}\nSHA-256: ${e.hash}\n`).join('\n')}
+${state.evidence.map(e => `[${e.platform}] ID: ${e.id} | Timestamp: ${e.time} | Location: ${e.location}\nContent: "${e.content}"\nAssociated Comment: ${e.suspiciousComment}\nThreat Assessment: ${e.threatFlag}\nTelemetry Metadata: ${e.meta}\nSHA-256: ${e.hash}\n`).join('\n')}
 
 CHAIN OF CUSTODY AUDIT TRAIL (CRYPTOGRAPHIC BLOCK LEDGER)
 --------------------------------------------------------------------------------
@@ -650,33 +754,27 @@ const stepBackgrounds = {
   ],
   collect: [
     "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1920&q=80"
+    "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1920&q=80"
   ],
   vault: [
     "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=1920&q=80"
+    "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1920&q=80"
   ],
   timeline: [
     "https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80"
+    "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=1920&q=80"
   ],
   graph: [
     "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1526374879817-a059b034b0fb?auto=format&fit=crop&w=1920&q=80"
+    "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1920&q=80"
   ],
   custody: [
     "https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=80"
+    "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?auto=format&fit=crop&w=1920&q=80"
   ],
   report: [
     "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1920&q=80"
+    "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1920&q=80"
   ]
 };
 
