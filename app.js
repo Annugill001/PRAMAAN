@@ -121,8 +121,13 @@ function generateForensicProfile(inputName) {
   const posts = [];
   let itemCounter = 1;
 
-  // Instagram Items (6 items)
-  for (let i = 0; i < 6; i++) {
+  // Dynamically computed count per platform from seed
+  const countIG = 3 + Math.floor(rng() * 5); // 3 to 7 items
+  const countFB = 2 + Math.floor(rng() * 4); // 2 to 5 items
+  const countTW = 3 + Math.floor(rng() * 6); // 3 to 8 items
+
+  // Instagram Items
+  for (let i = 0; i < countIG; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
     const dev = bankDevices[Math.floor(rng() * bankDevices.length)];
     const month = 1 + Math.floor(rng() * 12);
@@ -136,7 +141,7 @@ function generateForensicProfile(inputName) {
       platform: "Instagram",
       handle: `_${cleanHandle}`,
       time: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${hour}:${minute}:00`,
-      content: shuffledIG[i],
+      content: shuffledIG[i % shuffledIG.length],
       location: loc.name,
       likes: 120 + Math.floor(rng() * 450),
       commentsCount: 4 + Math.floor(rng() * 14),
@@ -144,8 +149,8 @@ function generateForensicProfile(inputName) {
     });
   }
 
-  // Facebook Items (5 items)
-  for (let i = 0; i < 5; i++) {
+  // Facebook Items
+  for (let i = 0; i < countFB; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
     const month = 1 + Math.floor(rng() * 12);
     const day = 1 + Math.floor(rng() * 27);
@@ -158,7 +163,7 @@ function generateForensicProfile(inputName) {
       platform: "Facebook",
       handle: name,
       time: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${hour}:${minute}:00`,
-      content: shuffledFB[i],
+      content: shuffledFB[i % shuffledFB.length],
       location: loc.name,
       likes: 90 + Math.floor(rng() * 380),
       commentsCount: 5 + Math.floor(rng() * 18),
@@ -166,8 +171,8 @@ function generateForensicProfile(inputName) {
     });
   }
 
-  // X/Twitter Items (6 items)
-  for (let i = 0; i < 6; i++) {
+  // X/Twitter Items
+  for (let i = 0; i < countTW; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
     const mention = shuffledContacts[i % shuffledContacts.length];
     const month = 1 + Math.floor(rng() * 12);
@@ -181,7 +186,7 @@ function generateForensicProfile(inputName) {
       platform: "X (Twitter)",
       handle: `@${cleanHandle}`,
       time: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${hour}:${minute}:00`,
-      content: `${shuffledTW[i]} (cc: @${mention})`,
+      content: `${shuffledTW[i % shuffledTW.length]} (cc: @${mention})`,
       location: loc.name,
       likes: 85 + Math.floor(rng() * 520),
       retweets: 12 + Math.floor(rng() * 70),
@@ -501,44 +506,38 @@ ${state.custody.map(c => `${c.time} | ${c.actor} | ${c.action}\nDetail: ${c.deta
   a.click();
   toast("Forensic Report Downloaded!");
 }
+
 const stepBackgrounds = {
-  // Step 1: Investigation Board & Crime Scene Fingerprints
   setup: [
-    "bg1.jpg", // Aapki crime board wali photo
+    "bg1.jpg",
     "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?auto=format&fit=crop&w=1920&q=80"
   ],
-  // Step 2: Data Extraction, Code Matrix & Terminal Logs
   collect: [
     "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1920&q=80"
   ],
-  // Step 3: Cryptographic Vault, SHA-256 Hashes & Server Padlock
   vault: [
     "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=1920&q=80"
   ],
-  // Step 4: Digital Timeline, Satellite GPS & Chronological Trace
   timeline: [
     "https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80"
   ],
-  // Step 5: Entity Graph, Red-line Links & Mesh Network
   graph: [
     "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1526374879817-a059b034b0fb?auto=format&fit=crop&w=1920&q=80"
   ],
-  // Step 6: Tamper Evident Evidence & Chain of Custody Audit
   custody: [
     "https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=80"
   ],
-  // Step 7: Certified Legal Report, BSA Seal & Stamp
   report: [
     "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1920&q=80",
     "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1920&q=80",
@@ -568,7 +567,7 @@ window.switchTab = function(tabId) {
   if (originalSwitchTab) originalSwitchTab(tabId);
 };
 
-// Start cycle (har 3 second mein change hoga)
+// Start cycle
 cycleStepBackground();
 if (bgTimer) clearInterval(bgTimer);
 bgTimer = setInterval(cycleStepBackground, 2000);
