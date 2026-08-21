@@ -3,27 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PRAMAAN — Digital Forensic Evidence Platform</title>
+  <title>PRAMAAN — Digital Forensic Platform (SIH 2026)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Link to External CSS -->
-  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --bg: #10141A;
+      --panel: #171C24;
+      --panel-2: #1D232D;
+      --line: #2A313C;
+      --ink: #E8EBEF;
+      --ink-dim: #8892A0;
+      --ink-faint: #5B6472;
+      --seal: #3ECF8E;
+      --seal-dim: #1F3B2F;
+      --amber: #E3A73E;
+      --alert: #E0654F;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg); color: var(--ink);
+      font-family: var(--sans); min-height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 250px; flex-shrink: 0;
+      background: var(--panel); border-right: 1px solid var(--line);
+      display: flex; flex-direction: column; padding: 22px 0;
+    }
+    .brand { padding: 0 20px 20px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+    .brand .mark {
+      font-family: var(--mono); font-weight: 700; font-size: 20px;
+      letter-spacing: 1px; color: var(--seal);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .brand .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--seal); box-shadow: 0 0 8px var(--seal); }
+    .brand .sub { font-size: 11px; color: var(--ink-faint); margin-top: 4px; text-transform: uppercase; }
+    .nav { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
+    .nav button {
+      all: unset; cursor: pointer; padding: 11px 12px; border-radius: 6px;
+      font-size: 13.5px; color: var(--ink-dim); display: flex; align-items: center;
+      gap: 10px; transition: 0.15s;
+    }
+    .nav button .num { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); width: 16px; }
+    .nav button:hover { background: var(--panel-2); color: var(--ink); }
+    .nav button.active { background: var(--seal-dim); color: var(--seal); font-weight: 600; }
+    .nav button.active .num { color: var(--seal); }
+    .case-chip { margin-top: auto; padding: 14px 18px; border-top: 1px solid var(--line); }
+    .case-chip .lbl { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; }
+    .case-chip .val { font-family: var(--mono); font-size: 13px; color: var(--amber); margin-top: 3px; }
+    main { flex: 1; padding: 34px 42px; overflow-y: auto; max-width: 1180px; }
+    .page-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 26px; }
+    .page-head h1 { font-size: 22px; margin: 0 0 4px; font-weight: 600; }
+    .page-head p { margin: 0; color: var(--ink-dim); font-size: 13px; }
+    .eyebrow { font-family: var(--mono); font-size: 11px; color: var(--seal); text-transform: uppercase; margin-bottom: 6px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px; margin-bottom: 18px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    label { display: block; font-size: 11.5px; color: var(--ink-dim); margin-bottom: 6px; text-transform: uppercase; }
+    input, select {
+      width: 100%; background: var(--panel-2); border: 1px solid var(--line);
+      color: var(--ink); padding: 10px 12px; border-radius: 6px; font-size: 13.5px; margin-bottom: 14px;
+    }
+    .btn {
+      all: unset; cursor: pointer; background: var(--seal); color: #0A1510;
+      font-weight: 600; font-size: 13.5px; padding: 11px 20px; border-radius: 6px;
+      display: inline-flex; align-items: center; gap: 8px; transition: 0.15s;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.secondary { background: var(--panel-2); color: var(--ink); border: 1px solid var(--line); }
+    .btn.amber { background: var(--amber); color: #221800; }
+    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+    .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+    .stat .n { font-family: var(--mono); font-size: 24px; color: var(--seal); font-weight: 600; }
+    .stat .l { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; }
+    .ev-row {
+      display: grid; grid-template-columns: 90px 1fr 190px 140px 90px;
+      gap: 14px; align-items: center; padding: 13px 14px; border-bottom: 1px solid var(--line); font-size: 13px;
+    }
+    .ev-row.head { color: var(--ink-faint); font-size: 10.5px; text-transform: uppercase; }
+    .tag { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-family: var(--mono); text-transform: uppercase; display: inline-block; font-weight: 600; }
+    .tag.instagram { background: #3B1B2B; color: #E1306C; }
+    .tag.facebook { background: #1B2B3A; color: #1877F2; }
+    .tag.twitter { background: #1E293B; color: #38BDF8; }
+    .hash { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+    .verified { color: var(--seal); font-family: var(--mono); font-size: 11px; }
+    .tline { position: relative; padding-left: 26px; }
+    .tline::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 1px; background: var(--line); }
+    .tl-item { position: relative; padding-bottom: 22px; }
+    .tl-item::before { content: ""; position: absolute; left: -25px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--seal); border: 2px solid var(--bg); }
+    .tl-time { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-bottom: 3px; }
+    .tl-body { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+    .log-row {
+      display: grid; grid-template-columns: 160px 110px 1fr 170px;
+      gap: 14px; padding: 11px 14px; border-bottom: 1px solid var(--line); font-size: 12.5px;
+    }
+    .log-row.head { color: var(--ink-faint); font-size: 10.5px; text-transform: uppercase; }
+    .badge-stamp {
+      display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono);
+      font-size: 11px; border: 1px solid var(--seal); color: var(--seal); padding: 5px 10px; border-radius: 5px;
+    }
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; background: var(--panel-2);
+      border: 1px solid var(--seal); color: var(--ink); padding: 12px 18px; border-radius: 8px;
+      font-size: 13px; display: none; z-index: 99; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .suggestions { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .sug-chip {
+      background: var(--panel-2); border: 1px solid var(--line); padding: 4px 10px;
+      border-radius: 14px; font-size: 11.5px; color: var(--ink-dim); cursor: pointer;
+      transition: 0.15s;
+    }
+    .sug-chip:hover { border-color: var(--seal); color: var(--seal); }
+  </style>
 </head>
 <body>
 
 <div class="sidebar">
   <div class="brand">
     <div class="mark"><span class="dot"></span>PRAMAAN</div>
-    <div class="sub">Digital Forensic Platform</div>
+    <div class="sub">SIH 2026 • The Hack Pack</div>
   </div>
   <div class="nav">
-    <button data-tab="setup" class="active"><span class="num">01</span>Case Setup</button>
-    <button data-tab="collect" disabled><span class="num">02</span>Data Collection</button>
-    <button data-tab="vault" disabled><span class="num">03</span>Evidence Vault</button>
-    <button data-tab="timeline" disabled><span class="num">04</span>Timeline</button>
-    <button data-tab="graph" disabled><span class="num">05</span>Relationships</button>
-    <button data-tab="custody" disabled><span class="num">06</span>Chain of Custody</button>
-    <button data-tab="report" disabled><span class="num">07</span>Report</button>
+    <button type="button" class="active" onclick="switchTab('setup')"><span class="num">01</span>Case Setup</button>
+    <button type="button" onclick="switchTab('collect')"><span class="num">02</span>Data Collection</button>
+    <button type="button" onclick="switchTab('vault')"><span class="num">03</span>Evidence Vault</button>
+    <button type="button" onclick="switchTab('timeline')"><span class="num">04</span>Timeline</button>
+    <button type="button" onclick="switchTab('graph')"><span class="num">05</span>Relationships</button>
+    <button type="button" onclick="switchTab('custody')"><span class="num">06</span>Chain of Custody</button>
+    <button type="button" onclick="switchTab('report')"><span class="num">07</span>Report</button>
   </div>
   <div class="case-chip" id="caseChip" style="display:none;">
     <div class="lbl">Active Case</div>
@@ -32,153 +142,157 @@
 </div>
 
 <main>
-  <!-- Step 01: Setup -->
+  <!-- 01 Setup -->
   <section id="tab-setup">
     <div class="page-head">
       <div>
         <div class="eyebrow">Step 01</div>
         <h1>Initiate Case</h1>
-        <p>Register a new investigation before evidence collection begins.</p>
+        <p>Register an investigation target for automated multi-platform ingestion.</p>
       </div>
     </div>
     <div class="card" style="max-width:640px;">
       <div class="grid2">
         <div>
           <label>Investigator Name</label>
-          <input id="inInvestigator" placeholder="e.g. Insp. R. Sharma">
+          <input id="inInvestigator" value="Insp. R. Sharma">
         </div>
         <div>
           <label>Badge / ID No.</label>
-          <input id="inBadge" placeholder="e.g. RJ-2291">
+          <input id="inBadge" value="RJ-2291">
         </div>
       </div>
-      <div class="grid2">
-        <div>
-          <label>Target Account / Handle</label>
-          <input id="inHandle" placeholder="@target_handle">
-        </div>
-        <div>
-          <label>Platform</label>
-          <select id="inPlatform">
-            <option>Instagram</option>
-            <option>X (Twitter)</option>
-            <option>Facebook</option>
-            <option>Telegram</option>
-            <option>Web URL</option>
-          </select>
-        </div>
+      
+      <label>Target Account / Subject Full Name</label>
+      <div class="suggestions">
+        <span class="sug-chip" onclick="quickSelect('Annu Gill')">Annu Gill</span>
+        <span class="sug-chip" onclick="quickSelect('Rohan Sharma')">Rohan Sharma</span>
+        <span class="sug-chip" onclick="quickSelect('Vikram Malhotra')">Vikram Malhotra</span>
+        <span class="sug-chip" onclick="quickSelect('Priya Patel')">Priya Patel</span>
+        <span class="sug-chip" onclick="quickSelect('Aarav Mehta')">Aarav Mehta</span>
       </div>
-      <label>Case Notes / Legal Basis (Sec 63B BSA)</label>
-      <input id="inNotes" placeholder="e.g. Warrant No. 114/2026, Sec 91 CrPC">
-      <button class="btn" id="btnInitCase">Create Case →</button>
+      <input id="inHandle" value="Annu Gill" placeholder="Type any target name or select above...">
+
+      <label>Investigation Scope</label>
+      <select id="inPlatform">
+        <option>Cross-Platform (Instagram, FB, X)</option>
+        <option>Instagram Focus</option>
+        <option>X (Twitter) Focus</option>
+      </select>
+
+      <label>Legal Authorization Basis</label>
+      <input id="inNotes" value="Warrant No. 114/2026, Sec 63B BSA">
+      <button type="button" class="btn" onclick="initiateCaseAction()">Create Case & Link Target →</button>
     </div>
   </section>
 
-  <!-- Step 02: Collect -->
+  <!-- 02 Collect -->
   <section id="tab-collect" style="display:none;">
     <div class="page-head">
       <div>
         <div class="eyebrow">Step 02</div>
-        <h1>Data Collection Engine</h1>
-        <p>Captures live web endpoints via headless Playwright, extracts metadata, and records SHA-256 hashes.</p>
+        <h1>Data Collection & Identity Resolution</h1>
+        <p>Dynamic footprint ingestion, multi-platform alias linking, and SHA-256 checksums.</p>
       </div>
-      <button class="btn" id="btnCollect">Run Live Collection ⤓</button>
+      <button type="button" class="btn" id="btnCollect" onclick="runCollectionAction()">Run Extraction & Ingest ⤓</button>
     </div>
     <div class="card">
-      <div id="collectLog" class="empty">
-        <div class="icon">◎</div>
-        Click <b>Run Live Collection</b> to trigger Playwright scraping and binary preservation on the backend.
+      <div id="collectLog" style="color:var(--ink-faint); text-align:center; padding:40px 20px; font-size:13.5px;">
+        Click <b>Run Extraction & Ingest</b> to link multi-platform footprints.
       </div>
     </div>
   </section>
 
-  <!-- Step 03: Vault -->
+  <!-- 03 Vault -->
   <section id="tab-vault" style="display:none;">
     <div class="page-head">
       <div>
         <div class="eyebrow">Step 03</div>
         <h1>Evidence Vault</h1>
-        <p>Cryptographic hashes computed upon ingestion. Run verification to audit against on-disk files.</p>
+        <p>Every post/tweet is secured with tamper-evident cryptographic SHA-256 hashing.</p>
       </div>
-      <button class="btn secondary" id="btnVerifyAll">Run Full Integrity Audit</button>
+      <div style="display:flex; gap:10px;">
+        <button type="button" class="btn secondary" onclick="verifyHashesAction()">Audit Hashes (0 Alterations)</button>
+        <button type="button" class="btn" onclick="switchTab('timeline')">View Timeline →</button>
+      </div>
     </div>
     <div class="stat-row" id="vaultStats"></div>
     <div class="card" style="padding:0;">
       <div class="ev-row head">
-        <div>Type</div><div>Extracted Content</div><div>SHA-256 Checksum</div><div>Timestamp</div><div>Status</div>
+        <div>Platform</div><div>Evidence Content Preview</div><div>SHA-256 Binary Hash</div><div>Timestamp</div><div>Integrity</div>
       </div>
       <div id="evList"></div>
     </div>
   </section>
 
-  <!-- Step 04: Timeline -->
+  <!-- 04 Timeline -->
   <section id="tab-timeline" style="display:none;">
     <div class="page-head">
       <div>
         <div class="eyebrow">Step 04</div>
-        <h1>Chronological Timeline</h1>
-        <p>Reconstructed chronological sequence of collected artifacts and events.</p>
+        <h1>Cross-Platform Unified Timeline</h1>
+        <p>Chronologically sorted activity reconstruction across Instagram, Facebook, and X.</p>
       </div>
+      <button type="button" class="btn" onclick="switchTab('graph')">View Graph →</button>
     </div>
     <div class="card"><div class="tline" id="timelineList"></div></div>
   </section>
 
-  <!-- Step 05: Graph -->
+  <!-- 05 Graph -->
   <section id="tab-graph" style="display:none;">
     <div class="page-head">
       <div>
         <div class="eyebrow">Step 05</div>
-        <h1>Relationship & Face Analysis</h1>
-        <p>Interactive graph linking connected accounts with face similarity flags.</p>
+        <h1>Relationship Analysis & Identity Linker</h1>
+        <p>Mapped target profiles and cross-platform shared common contacts.</p>
       </div>
+      <button type="button" class="btn" onclick="switchTab('custody')">View Custody Log →</button>
     </div>
     <div class="card">
-      <canvas id="graphCanvas" width="1080" height="440"></canvas>
-      <div class="legend">
-        <span><i style="background:var(--amber);"></i>Target account</span>
-        <span><i style="background:var(--seal);"></i>Verified profile</span>
-        <span><i style="background:var(--alert);"></i>Flagged identity match</span>
+      <canvas id="graphCanvas" width="1080" height="460" style="width:100%; background:var(--panel-2); border-radius:8px; display:block;"></canvas>
+      <div style="display:flex; gap:20px; margin-top:14px; font-size:12px; color:var(--ink-dim);">
+        <span><i style="width:10px;height:10px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:6px;"></i>Resolved Target Identity</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#B183E6;display:inline-block;margin-right:6px;"></i>Linked Platform Profile</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:var(--seal);display:inline-block;margin-right:6px;"></i>Cross-Platform Shared Contact</span>
       </div>
     </div>
   </section>
 
-  <!-- Step 06: Custody -->
+  <!-- 06 Custody -->
   <section id="tab-custody" style="display:none;">
     <div class="page-head">
       <div>
         <div class="eyebrow">Step 06</div>
-        <h1>Chain of Custody</h1>
-        <p>Immutable audit trail where every record incorporates the previous entry's cryptographic hash.</p>
+        <h1>Chain of Custody (BSA Section 63B)</h1>
+        <p>Append-only tamper-proof audit ledger with cryptographically chained entry hashes.</p>
       </div>
+      <button type="button" class="btn" onclick="switchTab('report')">Proceed to Report →</button>
     </div>
     <div class="card" style="padding:0;">
-      <div class="log-row head"><div>Timestamp</div><div>Actor</div><div>Action & Detail</div><div>Entry Hash</div></div>
+      <div class="log-row head"><div>Timestamp</div><div>Actor</div><div>Forensic Action</div><div>Chained Entry Hash</div></div>
       <div id="custodyList"></div>
     </div>
   </section>
 
-  <!-- Step 07: Report -->
+  <!-- 07 Report -->
   <section id="tab-report" style="display:none;">
     <div class="page-head">
       <div>
         <div class="eyebrow">Step 07</div>
-        <h1>Forensic PDF Report</h1>
-        <p>Compiles court-admissible forensic packages with Section 63B compliance certification.</p>
+        <h1>Forensic Evidence Report</h1>
+        <p>Court-admissible export with Section 63B BSA verification stamp.</p>
       </div>
     </div>
-    <div class="card" style="max-width:560px;">
-      <p style="color:var(--ink-dim);font-size:13px;line-height:1.6;">Generates a standardized PDF summarizing registered evidence hashes, full chain-of-custody logs, and investigator declarations.</p>
-      <div class="badge-stamp" id="reportStamp" style="margin-bottom:16px;">◎ Backend Ready</div>
+    <div class="card" style="max-width:580px;">
+      <p style="color:var(--ink-dim);font-size:13px;line-height:1.6;">Contains complete digital evidence manifest, cross-platform identity mapping, SHA-256 signatures, and custody verification.</p>
+      <div class="badge-stamp" style="margin-bottom:16px;">◎ section 63b certified forensic package</div>
       <br>
-      <button class="btn amber" id="btnReport">Download Forensic PDF ⇩</button>
+      <button type="button" class="btn amber" onclick="downloadForensicReport()">Download Forensic Report Summary (.txt) ⇩</button>
     </div>
   </section>
 </main>
-
 <div class="toast" id="toast"></div>
 
-<!-- Link to External JavaScript -->
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
-```[cite: 2]
