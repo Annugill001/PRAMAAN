@@ -21,12 +21,12 @@ def generate_osint_pdf(subject_data: dict, findings: list, risks: list, recommen
 
     story = []
 
-    # 1. Header
+    # Header
     story.append(Paragraph("<b>OSINT Intelligence Report</b>", title_style))
     story.append(Paragraph(f"Generated at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}", body_style))
     story.append(Spacer(1, 12))
 
-    # 2. Executive Summary
+    # Executive Summary
     story.append(Paragraph("<b>Executive Summary</b>", section_style))
     summary_text = (
         f"This report analyzes subject {subject_data.get('handle','N/A')} across platforms "
@@ -38,7 +38,7 @@ def generate_osint_pdf(subject_data: dict, findings: list, risks: list, recommen
     story.append(Paragraph(summary_text, body_style))
     story.append(Spacer(1, 15))
 
-    # 3. Subject Profile
+    # Subject Profile
     story.append(Paragraph("<b>1. Subject Profile</b>", section_style))
     profile_table = [
         ["Subject ID", subject_data.get("subject_id", "N/A")],
@@ -55,7 +55,7 @@ def generate_osint_pdf(subject_data: dict, findings: list, risks: list, recommen
     story.append(t_profile)
     story.append(Spacer(1, 12))
 
-    # 4. Key Findings
+    # Key Findings
     story.append(Paragraph("<b>2. Key Findings</b>", section_style))
     findings_data = [["Platform", "Content Snippet", "Metadata", "Confidence"]]
     for f in findings or []:
@@ -69,7 +69,7 @@ def generate_osint_pdf(subject_data: dict, findings: list, risks: list, recommen
     story.append(t_findings)
     story.append(Spacer(1, 12))
 
-    # 5. Risk Assessment
+    # Risk Assessment
     story.append(Paragraph("<b>3. Risk Assessment</b>", section_style))
     risk_data = [["Risk Type", "Description", "Severity"]]
     for r in risks or []:
@@ -83,7 +83,7 @@ def generate_osint_pdf(subject_data: dict, findings: list, risks: list, recommen
     story.append(t_risks)
     story.append(Spacer(1, 12))
 
-    # 6. Recommendations
+    # Recommendations
     story.append(Paragraph("<b>4. Recommendations</b>", section_style))
     for rec in recommendations or []:
         story.append(Paragraph(f"• {rec}", body_style))
