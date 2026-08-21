@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PRAMAAN — Digital Forensic Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
@@ -278,7 +280,7 @@
     </div>
     <div class="card" style="max-width:580px;">
       <br>
-      <button type="button" class="btn amber" onclick="downloadForensicReport()">Download Forensic Report Summary (.txt) ⇩</button>
+     <button type="button" class="btn amber" onclick="downloadForensicPDF()">Download Certified Forensic Report (.PDF) ⇩</button>
     </div>
   </section>
 </main>

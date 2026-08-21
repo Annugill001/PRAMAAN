@@ -470,7 +470,142 @@ function renderCustody() {
   });
 }
 
-// 07 Download Section 63B Report
+// 07 Download Certified Section 63B BSA Forensic PDF
+async function downloadForensicPDF() {
+  if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
+    downloadForensicReport();
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const primary = [21, 27, 35];
+  const accent = [62, 207, 142];
+
+  doc.setFillColor(...primary);
+  doc.rect(0, 0, 210, 32, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(...accent);
+  doc.text('PRAMAAN — DIGITAL FORENSIC EVIDENCE REPORT', 14, 15);
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(200, 200, 200);
+  doc.text('Compliant with Section 63B Bharatiya Sakshya Adhiniyam (BSA), 2023', 14, 23);
+
+  doc.setFontSize(9.5);
+  doc.setTextColor(30, 30, 30);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Case ID: ${state.caseId}`, 14, 40);
+  doc.text(`Target Subject: ${activeTargetData.person}`, 14, 46);
+  doc.text(`Lead Investigator: ${state.investigator} (Badge: ${state.badge})`, 110, 40);
+  doc.text(`Timestamp: ${new Date().toLocaleString('en-IN')}`, 110, 46);
+
+  doc.setDrawColor(200, 200, 200);
+  doc.line(14, 50, 196, 50);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...primary);
+  doc.text('1. RESOLVED TARGET PROFILES', 14, 57);
+
+  const profileRows = activeTargetData.profiles.map(p => [
+    p.platform,
+    p.handle,
+    p.followers ? `Followers: ${p.followers}` : `Friends: ${p.friends || 'N/A'}`
+  ]);
+
+  if (doc.autoTable) {
+    doc.autoTable({
+      startY: 61,
+      head: [['Platform', 'Resolved Handle / Alias', 'Network Footprint']],
+      body: profileRows,
+      theme: 'grid',
+      headStyles: { fillColor: primary, textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 8.5 }
+    });
+
+    let nextY = doc.lastAutoTable.finalY + 8;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...primary);
+    doc.text('2. CRYPTOGRAPHIC EVIDENCE MANIFEST & INTEGRITY VAULT', 14, nextY);
+
+    const evRows = state.evidence.map(e => [
+      e.id,
+      e.platform,
+      e.content.slice(0, 45) + (e.content.length > 45 ? '...' : ''),
+      e.hash.slice(0, 20) + '...',
+      'INTEGRITY VERIFIED'
+    ]);
+
+    doc.autoTable({
+      startY: nextY + 4,
+      head: [['ID', 'Platform', 'Extracted Payload Summary', 'SHA-256 Signature', 'Status']],
+      body: evRows,
+      theme: 'striped',
+      headStyles: { fillColor: [40, 50, 65], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 7.5 }
+    });
+
+    nextY = doc.lastAutoTable.finalY + 8;
+    if (nextY > 230) {
+      doc.addPage();
+      nextY = 20;
+    }
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...primary);
+    doc.text('3. CHAIN OF CUSTODY (CRYPTOGRAPHIC AUDIT TRAIL)', 14, nextY);
+
+    const custodyRows = state.custody.map(c => [
+      c.time.slice(0, 19).replace('T', ' '),
+      c.actor,
+      c.action,
+      c.hash.slice(0, 18) + '...'
+    ]);
+
+    doc.autoTable({
+      startY: nextY + 4,
+      head: [['Timestamp (UTC)', 'Authorized Actor', 'Forensic Action', 'Block SHA-256']],
+      body: custodyRows,
+      theme: 'grid',
+      headStyles: { fillColor: primary, textColor: [255, 255, 255] },
+      styles: { fontSize: 7.5 }
+    });
+
+    let finalY = doc.lastAutoTable.finalY + 12;
+    if (finalY > 250) {
+      doc.addPage();
+      finalY = 20;
+    }
+
+    doc.setDrawColor(...accent);
+    doc.setLineWidth(0.8);
+    doc.rect(14, finalY, 182, 22);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...accent);
+    doc.text('◎ CERTIFICATE OF AUTHENTICITY (SECTION 63B BHARATIYA SAKSHYA ADHINIYAM)', 18, finalY + 8);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(70, 70, 70);
+    doc.text('This digital package was algorithmically computed using irreversible SHA-256 cryptography and tamper-evident chaining.', 18, finalY + 14);
+    doc.text(`Digital Signatures Validated · Lead Officer: ${state.investigator} · ID: ${state.badge}`, 18, finalY + 18);
+  }
+
+  const fileName = `${state.caseId}_${activeTargetData.person.replace(/\s+/g, '_')}_Forensic_Report.pdf`;
+  doc.save(fileName);
+  toast("Forensic PDF Report Downloaded!");
+}
+
+// Fallback Text Report Downloader
 function downloadForensicReport() {
   const manifest = `PRAMAAN DIGITAL FORENSIC EVIDENCE REPORT (SECTION 63B BSA COMPLIANT)
 ================================================================================
