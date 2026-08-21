@@ -27,10 +27,10 @@ def generate_report(mode: str, case_data: dict, evidence_list: list = None, cust
     story = []
     story.append(Paragraph(f"<b>{'Digital Forensic Investigation Report' if mode=='forensic' else 'OSINT Intelligence Report'}</b>", title_style))
     story.append(Paragraph(f"Generated at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}", body_style))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 15))
 
+    # --- FORENSIC MODE ---
     if mode == "forensic":
-        # Case Details
         story.append(Paragraph("<b>1. Investigation Details</b>", section_style))
         case_table_data = [
             ["Case ID", case_data.get("case_id", "N/A")],
@@ -40,32 +40,42 @@ def generate_report(mode: str, case_data: dict, evidence_list: list = None, cust
             ["Compliance Reference", "Sec 63B Bharatiya Sakshya Adhiniyam / Indian Evidence Act"],
         ]
         t_case = Table(case_table_data, colWidths=[150, 370])
-        t_case.setStyle(TableStyle([('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#BDC3C7"))]))
+        t_case.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#DDEEFF")),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+        ]))
         story.append(t_case)
         story.append(Spacer(1, 12))
 
-        # Evidence Register
         story.append(Paragraph("<b>2. Cryptographic Evidence Register</b>", section_style))
         ev_table_data = [["ID", "Type", "Extracted Content", "SHA-256 Hash"]]
         for ev in evidence_list or []:
             content_preview = ev.get("content", "")[:50] + "..." if len(ev.get("content", "")) > 50 else ev.get("content", "")
             ev_table_data.append([ev.get("evidence_id", ""), ev.get("evidence_type", ""), content_preview, ev.get("hash", "")[:32]+"..."])
         t_ev = Table(ev_table_data, colWidths=[65, 65, 230, 160])
-        t_ev.setStyle(TableStyle([('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#BDC3C7"))]))
+        t_ev.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+        ]))
         story.append(t_ev)
         story.append(Spacer(1, 12))
 
-        # Chain of Custody
         story.append(Paragraph("<b>3. Hash-Chained Audit Trail</b>", section_style))
         custody_data = [["Timestamp", "Actor", "Action & Detail", "Entry Hash"]]
         for log in custody_logs or []:
             custody_data.append([log.get("timestamp", ""), log.get("actor", ""), f"{log.get('action')}: {log.get('detail')}", log.get("entry_hash", "")[:24]+"..."])
         t_custody = Table(custody_data, colWidths=[90, 80, 210, 140])
-        t_custody.setStyle(TableStyle([('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#BDC3C7"))]))
+        t_custody.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+        ]))
         story.append(t_custody)
 
+    # --- OSINT MODE ---
     elif mode == "osint":
-        # Subject Profile
         story.append(Paragraph("<b>1. Subject Profile</b>", section_style))
         profile_table = [
             ["Subject ID", case_data.get("subject_id", "N/A")],
@@ -74,38 +84,43 @@ def generate_report(mode: str, case_data: dict, evidence_list: list = None, cust
             ["Known Contacts", ", ".join(case_data.get("contacts", []))],
         ]
         t_profile = Table(profile_table, colWidths=[150, 370])
-        t_profile.setStyle(TableStyle([('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#BDC3C7"))]))
+        t_profile.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#DDEEFF")),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+        ]))
         story.append(t_profile)
         story.append(Spacer(1, 12))
 
-        # Key Findings
         story.append(Paragraph("<b>2. Key Findings</b>", section_style))
-        findings_data = [["Platform", "Content", "Metadata", "Confidence"]]
+        findings_data = [["Platform", "Content Snippet", "Metadata", "Confidence"]]
         for f in findings or []:
             findings_data.append([f.get("platform"), f.get("content")[:60]+"...", f.get("metadata"), f.get("confidence")])
-        t_findings = Table(findings_data, colWidths=[70, 200, 150, 100])
-        t_findings.setStyle(TableStyle([('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#BDC3C7"))]))
+        t_findings = Table(findings_data, colWidths=[80, 200, 150, 80])
+        t_findings.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+        ]))
         story.append(t_findings)
         story.append(Spacer(1, 12))
 
-        # Risk Assessment
         story.append(Paragraph("<b>3. Risk Assessment</b>", section_style))
         risk_data = [["Risk Type", "Description", "Severity"]]
         for r in risks or []:
             risk_data.append([r.get("type"), r.get("description"), r.get("severity")])
         t_risks = Table(risk_data, colWidths=[100, 250, 120])
-        t_risks.setStyle(TableStyle([('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#BDC3C7"))]))
+        t_risks.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+        ]))
         story.append(t_risks)
         story.append(Spacer(1, 12))
 
-        # Recommendations
         story.append(Paragraph("<b>4. Recommendations</b>", section_style))
         for rec in recommendations or []:
             story.append(Paragraph(f"• {rec}", body_style))
 
     doc.build(story)
     return file_path
-
-    
-    
-       
