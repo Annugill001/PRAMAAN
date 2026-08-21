@@ -26,15 +26,22 @@ def generate_osint_pdf(subject_data: dict, findings: list, risks: list, recommen
     story.append(Paragraph(f"Generated at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}", body_style))
     story.append(Spacer(1, 12))
 
-    # Executive Summary
+    # --- Auto Executive Summary ---
     story.append(Paragraph("<b>Executive Summary</b>", section_style))
+
+    platforms = ", ".join(subject_data.get("platforms", []))
+    contacts = ", ".join(subject_data.get("contacts", []))
+    key_findings = [f.get("content")[:40]+"..." for f in findings[:2]]  # first 2 snippets
+    risk_types = [r.get("type") for r in risks]
+
     summary_text = (
-        f"This report analyzes subject {subject_data.get('handle','N/A')} across platforms "
-        f"{', '.join(subject_data.get('platforms', []))}. Key findings highlight activity patterns, "
-        f"network overlaps, and metadata correlations. Risks include potential influence operations "
-        f"and suspicious cross-platform activity. Recommendations are provided for monitoring and "
-        f"further investigation."
+        f"Subject {subject_data.get('handle','N/A')} is active across {platforms}. "
+        f"Key findings include: {', '.join(key_findings)}. "
+        f"Known contacts: {contacts}. "
+        f"Risks identified: {', '.join(risk_types)}. "
+        f"Recommendations are provided for monitoring and further investigation."
     )
+
     story.append(Paragraph(summary_text, body_style))
     story.append(Spacer(1, 15))
 
@@ -43,8 +50,8 @@ def generate_osint_pdf(subject_data: dict, findings: list, risks: list, recommen
     profile_table = [
         ["Subject ID", subject_data.get("subject_id", "N/A")],
         ["Name / Handle", subject_data.get("handle", "N/A")],
-        ["Platforms", ", ".join(subject_data.get("platforms", []))],
-        ["Known Contacts", ", ".join(subject_data.get("contacts", []))],
+        ["Platforms", platforms],
+        ["Known Contacts", contacts],
     ]
     t_profile = Table(profile_table, colWidths=[150, 370])
     t_profile.setStyle(TableStyle([
