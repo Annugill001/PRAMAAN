@@ -5,16 +5,12 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-REPORTS_DIR = "./reports"
+REPORTS_DIR = "./osint_reports"
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
-def generate_report(mode: str, case_data: dict, evidence_list: list = None, custody_logs: list = None,
-                    findings: list = None, risks: list = None, recommendations: list = None) -> str:
-    """
-    mode = 'forensic' or 'osint'
-    """
-    report_id = case_data.get("case_id", case_data.get("subject_id", "REPORT"))
-    file_path = os.path.join(REPORTS_DIR, f"{report_id}_{mode.upper()}_Report.pdf")
+def generate_osint_pdf(subject_data: dict, findings: list, risks: list, recommendations: list) -> str:
+    subject_id = subject_data.get("subject_id", "OSINT_REPORT")
+    file_path = os.path.join(REPORTS_DIR, f"{subject_id}_OSINT_Report.pdf")
 
     doc = SimpleDocTemplate(file_path, pagesize=A4, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
     styles = getSampleStyleSheet()
@@ -22,105 +18,75 @@ def generate_report(mode: str, case_data: dict, evidence_list: list = None, cust
     title_style = ParagraphStyle('DocTitle', parent=styles['Heading1'], fontSize=18, leading=22, textColor=colors.HexColor("#1A2B3C"))
     section_style = ParagraphStyle('SectionHeading', parent=styles['Heading2'], fontSize=13, leading=16, textColor=colors.HexColor("#2C3E50"), spaceBefore=14, spaceAfter=6)
     body_style = ParagraphStyle('Body', parent=styles['Normal'], fontSize=9, leading=12, textColor=colors.HexColor("#2C3E50"))
-    mono_style = ParagraphStyle('MonoText', parent=styles['Normal'], fontName='Courier', fontSize=7.5, leading=9.5, textColor=colors.HexColor("#333333"))
 
     story = []
-    story.append(Paragraph(f"<b>{'Digital Forensic Investigation Report' if mode=='forensic' else 'OSINT Intelligence Report'}</b>", title_style))
+
+    # 1. Header
+    story.append(Paragraph("<b>OSINT Intelligence Report</b>", title_style))
     story.append(Paragraph(f"Generated at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}", body_style))
+    story.append(Spacer(1, 12))
+
+    # 2. Executive Summary
+    story.append(Paragraph("<b>Executive Summary</b>", section_style))
+    summary_text = (
+        f"This report analyzes subject {subject_data.get('handle','N/A')} across platforms "
+        f"{', '.join(subject_data.get('platforms', []))}. Key findings highlight activity patterns, "
+        f"network overlaps, and metadata correlations. Risks include potential influence operations "
+        f"and suspicious cross-platform activity. Recommendations are provided for monitoring and "
+        f"further investigation."
+    )
+    story.append(Paragraph(summary_text, body_style))
     story.append(Spacer(1, 15))
 
-    # --- FORENSIC MODE ---
-    if mode == "forensic":
-        story.append(Paragraph("<b>1. Investigation Details</b>", section_style))
-        case_table_data = [
-            ["Case ID", case_data.get("case_id", "N/A")],
-            ["Investigating Officer", f"{case_data.get('investigator')} (Badge: {case_data.get('badge')})"],
-            ["Target Account", f"{case_data.get('target_handle')} ({case_data.get('platform')})"],
-            ["Legal Authorization", case_data.get("notes", "N/A")],
-            ["Compliance Reference", "Sec 63B Bharatiya Sakshya Adhiniyam / Indian Evidence Act"],
-        ]
-        t_case = Table(case_table_data, colWidths=[150, 370])
-        t_case.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#DDEEFF")),
-            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
-        ]))
-        story.append(t_case)
-        story.append(Spacer(1, 12))
+    # 3. Subject Profile
+    story.append(Paragraph("<b>1. Subject Profile</b>", section_style))
+    profile_table = [
+        ["Subject ID", subject_data.get("subject_id", "N/A")],
+        ["Name / Handle", subject_data.get("handle", "N/A")],
+        ["Platforms", ", ".join(subject_data.get("platforms", []))],
+        ["Known Contacts", ", ".join(subject_data.get("contacts", []))],
+    ]
+    t_profile = Table(profile_table, colWidths=[150, 370])
+    t_profile.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#DDEEFF")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+    ]))
+    story.append(t_profile)
+    story.append(Spacer(1, 12))
 
-        story.append(Paragraph("<b>2. Cryptographic Evidence Register</b>", section_style))
-        ev_table_data = [["ID", "Type", "Extracted Content", "SHA-256 Hash"]]
-        for ev in evidence_list or []:
-            content_preview = ev.get("content", "")[:50] + "..." if len(ev.get("content", "")) > 50 else ev.get("content", "")
-            ev_table_data.append([ev.get("evidence_id", ""), ev.get("evidence_type", ""), content_preview, ev.get("hash", "")[:32]+"..."])
-        t_ev = Table(ev_table_data, colWidths=[65, 65, 230, 160])
-        t_ev.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
-            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
-        ]))
-        story.append(t_ev)
-        story.append(Spacer(1, 12))
+    # 4. Key Findings
+    story.append(Paragraph("<b>2. Key Findings</b>", section_style))
+    findings_data = [["Platform", "Content Snippet", "Metadata", "Confidence"]]
+    for f in findings or []:
+        findings_data.append([f.get("platform"), f.get("content")[:60]+"...", f.get("metadata"), f.get("confidence")])
+    t_findings = Table(findings_data, colWidths=[80, 200, 150, 80])
+    t_findings.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+    ]))
+    story.append(t_findings)
+    story.append(Spacer(1, 12))
 
-        story.append(Paragraph("<b>3. Hash-Chained Audit Trail</b>", section_style))
-        custody_data = [["Timestamp", "Actor", "Action & Detail", "Entry Hash"]]
-        for log in custody_logs or []:
-            custody_data.append([log.get("timestamp", ""), log.get("actor", ""), f"{log.get('action')}: {log.get('detail')}", log.get("entry_hash", "")[:24]+"..."])
-        t_custody = Table(custody_data, colWidths=[90, 80, 210, 140])
-        t_custody.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
-            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
-        ]))
-        story.append(t_custody)
+    # 5. Risk Assessment
+    story.append(Paragraph("<b>3. Risk Assessment</b>", section_style))
+    risk_data = [["Risk Type", "Description", "Severity"]]
+    for r in risks or []:
+        risk_data.append([r.get("type"), r.get("description"), r.get("severity")])
+    t_risks = Table(risk_data, colWidths=[100, 250, 120])
+    t_risks.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+    ]))
+    story.append(t_risks)
+    story.append(Spacer(1, 12))
 
-    # --- OSINT MODE ---
-    elif mode == "osint":
-        story.append(Paragraph("<b>1. Subject Profile</b>", section_style))
-        profile_table = [
-            ["Subject ID", case_data.get("subject_id", "N/A")],
-            ["Name / Handle", case_data.get("handle", "N/A")],
-            ["Platforms", ", ".join(case_data.get("platforms", []))],
-            ["Known Contacts", ", ".join(case_data.get("contacts", []))],
-        ]
-        t_profile = Table(profile_table, colWidths=[150, 370])
-        t_profile.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#DDEEFF")),
-            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
-        ]))
-        story.append(t_profile)
-        story.append(Spacer(1, 12))
-
-        story.append(Paragraph("<b>2. Key Findings</b>", section_style))
-        findings_data = [["Platform", "Content Snippet", "Metadata", "Confidence"]]
-        for f in findings or []:
-            findings_data.append([f.get("platform"), f.get("content")[:60]+"...", f.get("metadata"), f.get("confidence")])
-        t_findings = Table(findings_data, colWidths=[80, 200, 150, 80])
-        t_findings.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
-            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
-        ]))
-        story.append(t_findings)
-        story.append(Spacer(1, 12))
-
-        story.append(Paragraph("<b>3. Risk Assessment</b>", section_style))
-        risk_data = [["Risk Type", "Description", "Severity"]]
-        for r in risks or []:
-            risk_data.append([r.get("type"), r.get("description"), r.get("severity")])
-        t_risks = Table(risk_data, colWidths=[100, 250, 120])
-        t_risks.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F0F0F0")),
-            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#999999")),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
-        ]))
-        story.append(t_risks)
-        story.append(Spacer(1, 12))
-
-        story.append(Paragraph("<b>4. Recommendations</b>", section_style))
-        for rec in recommendations or []:
-            story.append(Paragraph(f"• {rec}", body_style))
+    # 6. Recommendations
+    story.append(Paragraph("<b>4. Recommendations</b>", section_style))
+    for rec in recommendations or []:
+        story.append(Paragraph(f"• {rec}", body_style))
 
     doc.build(story)
     return file_path
