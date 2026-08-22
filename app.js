@@ -133,7 +133,7 @@ async function computeRealSHA256(message) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Generate Fixed Profile Data for ANY Name (Natural Human-Readable Reasons)
+// Generate Fixed Profile Data for ANY Name (Categorized Relationship Hierarchy)
 function generateForensicProfile(inputName) {
   const name = inputName.trim() || "Annu Gill";
   const seedInt = stringToSeed(name);
@@ -143,19 +143,38 @@ function generateForensicProfile(inputName) {
   const shuffledIG = seededShuffle(bankIG, rng);
   const shuffledFB = seededShuffle(bankFB, rng);
   const shuffledTW = seededShuffle(bankTW, rng);
-  const shuffledContacts = seededShuffle(bankContacts, rng).slice(0, 6);
+  const shuffledContacts = seededShuffle(bankContacts, rng);
 
-  const contactStats = shuffledContacts.map(c => {
-    const totalInteractions = 8 + Math.floor(rng() * 18);
-    const suspiciousComments = 3 + Math.floor(rng() * 7);
+  // Group 1: High Frequency Conspirators (Direct Threats linked to Suspect)
+  const conspirators = shuffledContacts.slice(0, 3).map((c, idx) => {
+    const totalInteractions = 12 + Math.floor(rng() * 14);
+    const suspiciousComments = 3 + Math.floor(rng() * 5);
     return {
       handle: `@${c}`,
+      type: 'conspirator',
       totalInteractions,
       suspiciousComments,
-      riskLevel: totalInteractions > 15 ? "HIGH RISK ASSOCIATE" : "REGULAR CONTACT",
+      linkedPlatformIndex: idx % 3, // Specifically attached to IG, FB or TW
+      riskLevel: "HIGH-FREQUENCY CONSPIRATOR",
       lastKnownCoord: bankLocations[Math.floor(rng() * bankLocations.length)].name
     };
   });
+
+  // Group 2: Mutual / Common Circle Contacts (Common with Victim / Case)
+  const mutualContacts = shuffledContacts.slice(3, 7).map((c, idx) => {
+    const totalInteractions = 2 + Math.floor(rng() * 5);
+    return {
+      handle: `@${c}`,
+      type: 'mutual',
+      totalInteractions,
+      suspiciousComments: 0,
+      linkedPlatformIndex: idx % 2, // Attached to general profile
+      riskLevel: "MUTUAL NETWORK NODE",
+      lastKnownCoord: bankLocations[Math.floor(rng() * bankLocations.length)].name
+    };
+  });
+
+  const allNetworkNodes = [...conspirators, ...mutualContacts];
 
   const posts = [];
   let itemCounter = 1;
@@ -168,7 +187,7 @@ function generateForensicProfile(inputName) {
   for (let i = 0; i < countIG; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
     const dev = bankDevices[Math.floor(rng() * bankDevices.length)];
-    const topContact = shuffledContacts[i % shuffledContacts.length];
+    const topContact = conspirators[i % conspirators.length].handle.replace('@', '');
     const commentObj = bankSuspiciousComments[Math.floor(rng() * bankSuspiciousComments.length)];
     const month = 1 + Math.floor(rng() * 12);
     const day = 1 + Math.floor(rng() * 27);
@@ -199,7 +218,7 @@ function generateForensicProfile(inputName) {
   // Facebook Items
   for (let i = 0; i < countFB; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
-    const topContact = shuffledContacts[(i + 1) % shuffledContacts.length];
+    const topContact = conspirators[(i + 1) % conspirators.length].handle.replace('@', '');
     const commentObj = bankSuspiciousComments[Math.floor(rng() * bankSuspiciousComments.length)];
     const month = 1 + Math.floor(rng() * 12);
     const day = 1 + Math.floor(rng() * 27);
@@ -230,7 +249,7 @@ function generateForensicProfile(inputName) {
   // X/Twitter Items
   for (let i = 0; i < countTW; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
-    const topContact = shuffledContacts[(i + 2) % shuffledContacts.length];
+    const topContact = conspirators[(i + 2) % conspirators.length].handle.replace('@', '');
     const commentObj = bankSuspiciousComments[Math.floor(rng() * bankSuspiciousComments.length)];
     const month = 1 + Math.floor(rng() * 12);
     const day = 1 + Math.floor(rng() * 27);
@@ -270,8 +289,10 @@ function generateForensicProfile(inputName) {
       { platform: "Facebook", handle: name, friends: 380 + Math.floor(rng() * 680), groups: ["Community Network", "City Explorers"] },
       { platform: "X (Twitter)", handle: `@${cleanHandle}`, followers: 620 + Math.floor(rng() * 1900), following: 100 + Math.floor(rng() * 200) }
     ],
-    contactAnalysis: contactStats,
-    sharedContacts: shuffledContacts,
+    conspirators: conspirators,
+    mutualContacts: mutualContacts,
+    contactAnalysis: allNetworkNodes,
+    sharedContacts: allNetworkNodes.map(n => n.handle.replace('@', '')),
     posts: posts.sort((a, b) => new Date(b.time) - new Date(a.time))
   };
 }
@@ -362,7 +383,7 @@ async function runCollectionAction() {
       ✓ Subject Target Identity: <b>${activeTargetData.person.toUpperCase()}</b><br>
       ✓ Multi-Platform Linking: [Instagram: ${activeTargetData.profiles[0].handle}] · [Facebook: ${activeTargetData.profiles[1].handle}] · [X: ${activeTargetData.profiles[2].handle}]<br>
       ✓ Ingested Records: ${state.evidence.length} distinct, non-duplicate digital evidence items<br>
-      ✓ Cross-Platform Shared Nodes: ${activeTargetData.sharedContacts.join(', ')}<br>
+      ✓ Primary Suspect Contacts Identified: ${activeTargetData.conspirators.map(c => c.handle).join(', ')}<br>
       ✓ Cryptographic SHA-256 Register Sealed under Section 63B BSA.
     </div>
   `;
@@ -477,7 +498,7 @@ function renderTimeline() {
   });
 }
 
-// 05 Relationship Graph Render
+// 05 Relationship Graph Render (Realistic Radial Hierarchy & Intelligence Links)
 function drawGraph() {
   const canvas = document.getElementById('graphCanvas');
   if (!canvas) return;
@@ -487,65 +508,144 @@ function drawGraph() {
 
   const cx = w / 2, cy = h / 2;
 
-  // Platform Accounts (Purple Ring)
+  // 1. Draw Visual Grid Background for Forensic Aesthetics
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 30) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  for (let y = 0; y < h; y += 30) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  // 2. Center Node: Primary Suspect Target
+  ctx.beginPath();
+  ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+  ctx.fillStyle = '#EAB308'; // Amber Gold
+  ctx.shadowColor = 'rgba(234, 179, 8, 0.6)';
+  ctx.shadowBlur = 15;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.font = 'bold 12px IBM Plex Mono';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.textAlign = 'center';
+  ctx.fillText(activeTargetData.person.toUpperCase(), cx, cy + 42);
+  ctx.font = '9px IBM Plex Mono';
+  ctx.fillStyle = '#FCD34D';
+  ctx.fillText("[PRIMARY SUSPECT]", cx, cy + 54);
+
+  // 3. Inner Ring: Suspect's Owned Social Profiles (Purple Nodes)
   const profiles = activeTargetData.profiles;
   profiles.forEach((p, i) => {
     const ang = (i / profiles.length) * Math.PI * 2 - Math.PI / 2;
-    p._x = cx + 120 * Math.cos(ang);
-    p._y = cy + 120 * Math.sin(ang);
+    p._x = cx + 115 * Math.cos(ang);
+    p._y = cy + 105 * Math.sin(ang);
 
+    // Direct solid link: Suspect -> Profile
     ctx.beginPath();
     ctx.strokeStyle = '#B183E6';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2;
     ctx.moveTo(cx, cy);
     ctx.lineTo(p._x, p._y);
     ctx.stroke();
 
     ctx.beginPath();
     ctx.arc(p._x, p._y, 14, 0, Math.PI * 2);
-    ctx.fillStyle = '#B183E6';
-    ctx.fill();
-
-    ctx.font = '11px IBM Plex Mono';
-    ctx.fillStyle = '#E8EBEF';
-    ctx.fillText(`${p.handle} (${p.platform})`, p._x, p._y + (p._y > cy ? 22 : -16));
-  });
-
-  // Shared Contacts (Green Outer Ring)
-  const contacts = activeTargetData.sharedContacts;
-  contacts.forEach((c, i) => {
-    const ang = (i / contacts.length) * Math.PI * 2;
-    const nx = cx + 205 * Math.cos(ang);
-    const ny = cy + 205 * Math.sin(ang);
-
-    profiles.forEach(p => {
-      ctx.beginPath();
-      ctx.strokeStyle = '#2A313C';
-      ctx.lineWidth = 1;
-      ctx.moveTo(p._x, p._y);
-      ctx.lineTo(nx, ny);
-      ctx.stroke();
-    });
-
-    ctx.beginPath();
-    ctx.arc(nx, ny, 10, 0, Math.PI * 2);
-    ctx.fillStyle = '#3ECF8E';
+    ctx.fillStyle = '#9333EA';
     ctx.fill();
 
     ctx.font = '10.5px IBM Plex Mono';
-    ctx.fillStyle = '#8892A0';
-    ctx.fillText(`@${c}`, nx, ny + (ny > cy ? 18 : -12));
+    ctx.fillStyle = '#E9D5FF';
+    ctx.fillText(`${p.platform}`, p._x, p._y + (p._y > cy ? 22 : -16));
   });
 
-  // Center Target Node (Gold)
-  ctx.beginPath();
-  ctx.arc(cx, cy, 24, 0, Math.PI * 2);
-  ctx.fillStyle = '#E3A73E';
-  ctx.fill();
-  ctx.font = 'bold 12px IBM Plex Mono';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.textAlign = 'center';
-  ctx.fillText(`${activeTargetData.person.toUpperCase()}`, cx, cy + 42);
+  // 4. Outer Left/Bottom Zone: High-Frequency Conspirators (Red Alert Glowing Nodes)
+  const conspirators = activeTargetData.conspirators;
+  conspirators.forEach((c, i) => {
+    const ang = Math.PI * 0.45 + (i * 0.45); // Clustered in threat arc
+    const nx = cx + 210 * Math.cos(ang);
+    const ny = cy + 185 * Math.sin(ang);
+
+    const parentProfile = profiles[c.linkedPlatformIndex % profiles.length];
+
+    // High-threat active link (Red pulsing connection)
+    ctx.beginPath();
+    ctx.setLineDash([4, 2]);
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+    ctx.lineWidth = 2;
+    ctx.moveTo(parentProfile._x, parentProfile._y);
+    ctx.lineTo(nx, ny);
+    ctx.stroke();
+    ctx.setLineDash([]); // Reset line dash
+
+    // Red Warning Node
+    ctx.beginPath();
+    ctx.arc(nx, ny, 12, 0, Math.PI * 2);
+    ctx.fillStyle = '#EF4444';
+    ctx.shadowColor = 'rgba(239, 68, 68, 0.7)';
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.font = 'bold 10.5px IBM Plex Mono';
+    ctx.fillStyle = '#FCA5A5';
+    ctx.fillText(`${c.handle} (${c.totalInteractions}x)`, nx, ny + (ny > cy ? 18 : -14));
+    ctx.font = '8.5px IBM Plex Mono';
+    ctx.fillStyle = '#F87171';
+    ctx.fillText("🚨 FREQUENT CONSPIRATOR", nx, ny + (ny > cy ? 28 : -24));
+  });
+
+  // 5. Outer Top/Right Zone: Mutual / Common Circle Contacts (Cyan/Green Nodes)
+  const mutuals = activeTargetData.mutualContacts;
+  mutuals.forEach((m, i) => {
+    const ang = -Math.PI * 0.15 - (i * 0.45); // Clustered in mutual arc
+    const mx = cx + 210 * Math.cos(ang);
+    const my = cy + 185 * Math.sin(ang);
+
+    const parentProfile = profiles[m.linkedPlatformIndex % profiles.length];
+
+    // Subtle green link (Normal mutual association)
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(62, 207, 142, 0.4)';
+    ctx.lineWidth = 1.2;
+    ctx.moveTo(parentProfile._x, parentProfile._y);
+    ctx.lineTo(mx, my);
+    ctx.stroke();
+
+    // Mutual Circle Node
+    ctx.beginPath();
+    ctx.arc(mx, my, 9, 0, Math.PI * 2);
+    ctx.fillStyle = '#3ECF8E';
+    ctx.fill();
+
+    ctx.font = '10px IBM Plex Mono';
+    ctx.fillStyle = '#A7F3D0';
+    ctx.fillText(m.handle, mx, my + (my > cy ? 16 : -12));
+    ctx.font = '8px IBM Plex Mono';
+    ctx.fillStyle = '#6EE7B7';
+    ctx.fillText("MUTUAL CIRCLE", mx, my + (my > cy ? 25 : -20));
+  });
+
+  // 6. Forensic Legend Overlay on Top-Right Corner
+  ctx.textAlign = 'left';
+  ctx.font = '9px IBM Plex Mono';
+  
+  // Legend 1: Primary Target
+  ctx.fillStyle = '#EAB308'; ctx.fillRect(w - 180, 16, 10, 10);
+  ctx.fillStyle = '#CBD5E1'; ctx.fillText("Primary Suspect", w - 162, 24);
+
+  // Legend 2: Suspect Profile
+  ctx.fillStyle = '#9333EA'; ctx.fillRect(w - 180, 32, 10, 10);
+  ctx.fillStyle = '#CBD5E1'; ctx.fillText("Suspect Social Profiles", w - 162, 40);
+
+  // Legend 3: Co-Conspirator
+  ctx.fillStyle = '#EF4444'; ctx.fillRect(w - 180, 48, 10, 10);
+  ctx.fillStyle = '#CBD5E1'; ctx.fillText("Frequent Conspirator", w - 162, 56);
+
+  // Legend 4: Mutual Circle
+  ctx.fillStyle = '#3ECF8E'; ctx.fillRect(w - 180, 64, 10, 10);
+  ctx.fillStyle = '#CBD5E1'; ctx.fillText("Mutual Circle Node", w - 162, 72);
 }
 
 // 06 Custody Logger
