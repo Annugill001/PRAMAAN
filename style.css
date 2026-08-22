@@ -676,3 +676,80 @@ input:focus, select:focus {
   line-height: 1.4;
   white-space: normal;
 }
+/* Mobile Responsive Patch */
+@media (max-width: 768px) {
+  html, body {
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  
+  .brand {
+    padding: 0 16px 12px;
+    margin-bottom: 8px;
+  }
+  
+  .nav {
+    flex-direction: row;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0 12px 6px;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .nav button {
+    padding: 8px 12px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  
+  .nav button .num {
+    display: none;
+  }
+  
+  .case-chip {
+    display: none !important;
+  }
+  
+  main {
+    padding: 18px 14px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  
+  /* Horizontal scroll for wide forensic tables on mobile */
+  .card {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .card table,
+  #evList,
+  #custodyList {
+    min-width: 600px; /* Table scroll ho sakegi smoothly bina layout toote */
+  }
+  
+  canvas#graphCanvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 320px;
+  }
+}
