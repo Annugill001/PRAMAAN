@@ -133,7 +133,7 @@ async function computeRealSHA256(message) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Generate Fixed Profile Data for ANY Name (with Clear English Reasons)
+// Generate Fixed Profile Data for ANY Name (Natural Human-Readable Reasons)
 function generateForensicProfile(inputName) {
   const name = inputName.trim() || "Annu Gill";
   const seedInt = stringToSeed(name);
@@ -187,7 +187,7 @@ function generateForensicProfile(inputName) {
       frequentContact: `@${topContact}`,
       suspiciousComment: `[@${topContact}]: "${commentObj.text}"`,
       commentReason: commentObj.reason,
-      postReason: `Target coordinated an off-the-record file transfer and private meeting at ${loc.name} with @${topContact}.`,
+      postReason: `Post shows a casual photo at ${loc.name}, but comments underneath reveal secret coordination with @${topContact}.`,
       threatFlag: isSuspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL POST",
       isSuspicious: isSuspicious,
       likes: 120 + Math.floor(rng() * 450),
@@ -218,7 +218,7 @@ function generateForensicProfile(inputName) {
       frequentContact: `@${topContact}`,
       suspiciousComment: `[@${topContact}]: "${commentObj.text}"`,
       commentReason: commentObj.reason,
-      postReason: `Anomalous late-night activity logged at ${hour}:${minute} involving secretive direct communication.`,
+      postReason: `Posted late at night around ${hour}:${minute} while secretly exchanging files and messages with @${topContact}.`,
       threatFlag: isSuspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL POST",
       isSuspicious: isSuspicious,
       likes: 90 + Math.floor(rng() * 380),
@@ -249,7 +249,7 @@ function generateForensicProfile(inputName) {
       frequentContact: `@${topContact}`,
       suspiciousComment: `[@${topContact}]: "${commentObj.text}"`,
       commentReason: commentObj.reason,
-      postReason: `Public handle used to transmit coded coordination signals while explicitly tagging associate @${topContact}.`,
+      postReason: `Suspect tagged @${topContact} publicly to pass a coded message, and replies confirm they are hiding conversations.`,
       threatFlag: isSuspicious ? "SUSPICIOUS ACTIVITY" : "NORMAL POST",
       isSuspicious: isSuspicious,
       likes: 85 + Math.floor(rng() * 520),
@@ -377,7 +377,7 @@ async function runCollectionAction() {
   setTimeout(() => switchTab('vault'), 700);
 }
 
-// 03 Vault Render (Hover Tooltip with Reduced Emojis)
+// 03 Vault Render (Hover Tooltip with Strict Grid Lock)
 function renderVault() {
   const stats = document.getElementById('vaultStats');
   const suspiciousCount = state.evidence.filter(e => e.isSuspicious).length;
@@ -414,11 +414,11 @@ function renderVault() {
           <div class="tip-title"><b>[${ev.id}]</b> "${ev.content}"</div>
           ${ev.isSuspicious ? `
             <div class="tip-reason">
-              <b>Why Suspicious:</b> ${ev.postReason}
+              <b>Forensic Audit Reason:</b> ${ev.postReason}
             </div>
           ` : `
             <div style="font-size:11.5px; color:var(--ink-dim);">
-              Verified artifact log with no security anomalies.
+              Verified baseline artifact log with no integrity or geolocation discrepancies.
             </div>
           `}
         </div>
@@ -573,48 +573,53 @@ function renderCustody() {
   });
 }
 
-// 07 Download Certified Section 63B BSA Forensic PDF
+// 07 Download Certified Section 63B BSA Forensic PDF (With Full Text Wrapping & Relationship Graph)
 async function downloadForensicPDF() {
   if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
     downloadForensicReport();
     return;
   }
 
+  // Ensure relationship graph canvas is freshly rendered before capturing
+  drawGraph();
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
   const primary = [21, 27, 35];
   const accent = [62, 207, 142];
+  const redAlert = [185, 28, 28];
 
+  // Header Banner
   doc.setFillColor(...primary);
-  doc.rect(0, 0, 210, 32, 'F');
+  doc.rect(0, 0, 210, 30, 'F');
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(15);
   doc.setTextColor(...accent);
-  doc.text('PRAMAAN — DIGITAL FORENSIC EVIDENCE REPORT', 14, 15);
+  doc.text('PRAMAAN — DIGITAL FORENSIC EVIDENCE DOSSIER', 14, 13);
 
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(200, 200, 200);
-  doc.text('Compliant with Section 63B Bharatiya Sakshya Adhiniyam (BSA), 2023', 14, 23);
+  doc.text('Compliant with Section 63B Bharatiya Sakshya Adhiniyam (BSA), 2023', 14, 21);
 
-  doc.setFontSize(9.5);
+  doc.setFontSize(9);
   doc.setTextColor(30, 30, 30);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Case ID: ${state.caseId}`, 14, 40);
-  doc.text(`Target Subject: ${activeTargetData.person}`, 14, 46);
-  doc.text(`Lead Investigator: ${state.investigator} (Badge: ${state.badge})`, 110, 40);
-  doc.text(`Timestamp: ${new Date().toLocaleString('en-IN')}`, 110, 46);
+  doc.text(`Case ID: ${state.caseId}`, 14, 38);
+  doc.text(`Target Subject: ${activeTargetData.person}`, 14, 44);
+  doc.text(`Lead Officer: ${state.investigator} (Badge: ${state.badge})`, 110, 38);
+  doc.text(`Timestamp: ${new Date().toLocaleString('en-IN')}`, 110, 44);
 
   doc.setDrawColor(200, 200, 200);
-  doc.line(14, 50, 196, 50);
+  doc.line(14, 48, 196, 48);
 
-  // Section 1: Resolved Multi-Platform Profiles
-  doc.setFontSize(11);
+  // Section 1: Resolved Profiles
+  doc.setFontSize(10.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...primary);
-  doc.text('1. RESOLVED TARGET PROFILES & FREQUENT INTERACTORS', 14, 57);
+  doc.text('1. RESOLVED TARGET PROFILES & IDENTIFIERS', 14, 54);
 
   const profileRows = activeTargetData.profiles.map(p => [
     p.platform,
@@ -624,35 +629,115 @@ async function downloadForensicPDF() {
 
   if (doc.autoTable) {
     doc.autoTable({
-      startY: 61,
+      startY: 57,
       head: [['Platform', 'Resolved Handle / Alias', 'Network Footprint']],
       body: profileRows,
       theme: 'grid',
       headStyles: { fillColor: primary, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 8.5 }
+      styles: { fontSize: 8, cellPadding: 2 }
     });
 
+    // Section 2: Relationship Graph Diagram (Canvas Capture)
     let nextY = doc.lastAutoTable.finalY + 8;
-    doc.setFontSize(11);
+    doc.setFontSize(10.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...primary);
-    doc.text('2. EVIDENCE MANIFEST WITH THREAT REASONS', 14, nextY);
+    doc.text('2. NETWORK RELATIONSHIP & MUTUAL ASSOCIATES GRAPH', 14, nextY);
 
-    const evRows = state.evidence.map(e => [
-      e.id,
-      e.platform,
-      `${e.content.slice(0, 30)}...\n[Reason: ${e.postReason.slice(0, 35)}...]`,
-      e.hash.slice(0, 18) + '...',
-      e.isSuspicious ? 'SUSPICIOUS' : 'NORMAL'
-    ]);
+    const canvas = document.getElementById('graphCanvas');
+    if (canvas) {
+      try {
+        const graphImg = canvas.toDataURL('image/png', 1.0);
+        doc.addImage(graphImg, 'PNG', 14, nextY + 3, 182, 65);
+        nextY = nextY + 74;
+      } catch (err) {
+        nextY = nextY + 6;
+      }
+    }
+
+    if (nextY > 210) {
+      doc.addPage();
+      nextY = 20;
+    }
+
+    // Section 3: High-Priority Suspicious Evidence (Full Text Wrapped, No Ellipsis)
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...redAlert);
+    doc.text('3. HIGH-PRIORITY INCRIMINATING EVIDENCE (FULL TRACE)', 14, nextY);
+
+    const suspiciousRows = state.evidence
+      .filter(e => e.isSuspicious)
+      .map(e => [
+        e.id,
+        e.platform,
+        `Post Content:\n"${e.content}"\n\nIntercepted Comment:\n${e.suspiciousComment}\n\nDevice Telemetry:\n${e.meta}`,
+        `Investigation Analysis:\n${e.postReason}`,
+        e.hash
+      ]);
 
     doc.autoTable({
       startY: nextY + 4,
-      head: [['ID', 'Platform', 'Payload & Investigation Reason', 'SHA-256 Signature', 'Status']],
-      body: evRows,
+      head: [['ID', 'Platform', 'Content & Intercepted Interaction', 'Why Suspicious (Investigation Analysis)', 'SHA-256 Signature']],
+      body: suspiciousRows,
+      theme: 'grid',
+      headStyles: { fillColor: redAlert, textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { 
+        fontSize: 7.5, 
+        cellPadding: 3, 
+        overflow: 'linebreak', 
+        valign: 'top' 
+      },
+      columnStyles: {
+        0: { cellWidth: 16 },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 64 },
+        3: { cellWidth: 52 },
+        4: { cellWidth: 30, font: 'courier', fontSize: 6 }
+      }
+    });
+
+    nextY = doc.lastAutoTable.finalY + 8;
+    if (nextY > 220) {
+      doc.addPage();
+      nextY = 20;
+    }
+
+    // Section 4: Baseline Evidence Log
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...primary);
+    doc.text('4. BASELINE ARTIFACT MANIFEST (INTEGRITY AUDIT LOG)', 14, nextY);
+
+    const normalRows = state.evidence
+      .filter(e => !e.isSuspicious)
+      .map(e => [
+        e.id,
+        e.platform,
+        e.content,
+        e.time.slice(0, 16).replace('T', ' '),
+        e.hash
+      ]);
+
+    doc.autoTable({
+      startY: nextY + 4,
+      head: [['ID', 'Platform', 'Extracted Payload Content', 'Timestamp (UTC)', 'SHA-256 Hash']],
+      body: normalRows,
       theme: 'striped',
-      headStyles: { fillColor: [40, 50, 65], textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 7 }
+      headStyles: { fillColor: [55, 65, 81], textColor: [255, 255, 255] },
+      styles: { 
+        fontSize: 7, 
+        cellPadding: 2.5, 
+        overflow: 'linebreak', 
+        valign: 'top' 
+      },
+      columnStyles: {
+        0: { cellWidth: 16 },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 78 },
+        3: { cellWidth: 28 },
+        4: { cellWidth: 38, font: 'courier', fontSize: 6 }
+      }
     });
 
     nextY = doc.lastAutoTable.finalY + 8;
@@ -661,81 +746,92 @@ async function downloadForensicPDF() {
       nextY = 20;
     }
 
-    doc.setFontSize(11);
+    // Section 5: Chain of Custody
+    doc.setFontSize(10.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...primary);
-    doc.text('3. CHAIN OF CUSTODY (CRYPTOGRAPHIC AUDIT TRAIL)', 14, nextY);
+    doc.text('5. IMMUTABLE CHAIN OF CUSTODY (LEDGER TRAIL)', 14, nextY);
 
     const custodyRows = state.custody.map(c => [
       c.time.slice(0, 19).replace('T', ' '),
       c.actor,
-      c.action,
-      c.hash.slice(0, 18) + '...'
+      `${c.action} — ${c.detail}`,
+      c.hash
     ]);
 
     doc.autoTable({
       startY: nextY + 4,
-      head: [['Timestamp (UTC)', 'Authorized Actor', 'Forensic Action', 'Block SHA-256']],
+      head: [['Timestamp (UTC)', 'Authorized Actor', 'Forensic Action & Audit Detail', 'Block SHA-256']],
       body: custodyRows,
       theme: 'grid',
       headStyles: { fillColor: primary, textColor: [255, 255, 255] },
-      styles: { fontSize: 7.5 }
+      styles: { 
+        fontSize: 7, 
+        cellPadding: 2.5, 
+        overflow: 'linebreak', 
+        valign: 'top' 
+      },
+      columnStyles: {
+        0: { cellWidth: 32 },
+        1: { cellWidth: 28 },
+        2: { cellWidth: 84 },
+        3: { cellWidth: 38, font: 'courier', fontSize: 6 }
+      }
     });
 
-    let finalY = doc.lastAutoTable.finalY + 12;
-    if (finalY > 250) {
+    let finalY = doc.lastAutoTable.finalY + 8;
+    if (finalY > 260) {
       doc.addPage();
       finalY = 20;
     }
 
+    // Certificate Footer
     doc.setDrawColor(...accent);
     doc.setLineWidth(0.8);
-    doc.rect(14, finalY, 182, 22);
+    doc.rect(14, finalY, 182, 18);
 
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...accent);
-    doc.text('CERTIFICATE OF AUTHENTICITY (SECTION 63B BHARATIYA SAKSHYA ADHINIYAM)', 18, finalY + 8);
+    doc.text('CERTIFICATE OF DIGITAL INTEGRITY (SECTION 63B BSA, 2023)', 18, finalY + 6);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
+    doc.setFontSize(7);
     doc.setTextColor(70, 70, 70);
-    doc.text('This digital package was algorithmically computed using irreversible SHA-256 cryptography and tamper-evident chaining.', 18, finalY + 14);
-    doc.text(`Digital Signatures Validated · Lead Officer: ${state.investigator} · ID: ${state.badge}`, 18, finalY + 18);
+    doc.text(`Digital Signatures Validated · Lead Officer: ${state.investigator} (ID: ${state.badge}) · Hash Register Sealed.`, 18, finalY + 12);
   }
 
-  const fileName = `${state.caseId}_${activeTargetData.person.replace(/\s+/g, '_')}_Forensic_Report.pdf`;
+  const fileName = `${state.caseId}_${activeTargetData.person.replace(/\s+/g, '_')}_Forensic_Dossier.pdf`;
   doc.save(fileName);
-  toast("Forensic PDF Report Downloaded!");
+  toast("Certified Forensic PDF Dossier Downloaded!");
 }
 
-// Fallback Text Report Downloader
+// Fallback Text Report Downloader (Full Untruncated Trace)
 function downloadForensicReport() {
+  const suspiciousEv = state.evidence.filter(e => e.isSuspicious);
+  const normalEv = state.evidence.filter(e => !e.isSuspicious);
+
   const manifest = `PRAMAAN DIGITAL FORENSIC EVIDENCE REPORT (SECTION 63B BSA COMPLIANT)
 ================================================================================
 Case Reference : ${state.caseId}
 Investigator   : ${state.investigator} (Badge: ${state.badge})
 Target Subject : ${activeTargetData.person}
-Auth Basis     : Warrant No. 114/2026, Section 63B BSA
 Generated At   : ${new Date().toISOString()}
 
-RESOLVED PROFILES MANIFEST
---------------------------------------------------------------------------------
-1. Instagram : ${activeTargetData.profiles[0].handle} (Followers: ${activeTargetData.profiles[0].followers})
-2. Facebook  : ${activeTargetData.profiles[1].handle} (Friends: ${activeTargetData.profiles[1].friends})
-3. X/Twitter : ${activeTargetData.profiles[2].handle} (Followers: ${activeTargetData.profiles[2].followers})
+================================================================================
+[PRIMARY] HIGH-PRIORITY INCRIMINATING EVIDENCE (FULL UNTRUNCATED TEXT)
+================================================================================
+${suspiciousEv.map(e => `[${e.platform}] ID: ${e.id} | Timestamp: ${e.time}\nPost Content: "${e.content}"\nIntercepted Comment: ${e.suspiciousComment}\nSuspicion Reason: ${e.postReason}\nSHA-256 Signature: ${e.hash}\n`).join('\n')}
 
-CROSS-PLATFORM SHARED NETWORK NODES
---------------------------------------------------------------------------------
-- Verified Multi-Platform Contacts: ${activeTargetData.sharedContacts.join(', ')}
+================================================================================
+[BASELINE] COMPLETE CRYPTOGRAPHIC AUDIT LOG
+================================================================================
+${normalEv.map(e => `[${e.platform}] ID: ${e.id} | Timestamp: ${e.time} | Location: ${e.location}\nContent: "${e.content}"\nSHA-256 Hash: ${e.hash}\n`).join('\n')}
 
-CRYPTOGRAPHIC EVIDENCE MANIFEST (SHA-256 HASH REGISTER)
---------------------------------------------------------------------------------
-${state.evidence.map(e => `[${e.platform}] ID: ${e.id} | Timestamp: ${e.time} | Location: ${e.location}\nContent: "${e.content}"\nAssociated Comment: ${e.suspiciousComment}\nThreat Assessment: ${e.threatFlag}\nTelemetry Metadata: ${e.meta}\nSHA-256: ${e.hash}\n`).join('\n')}
-
-CHAIN OF CUSTODY AUDIT TRAIL (CRYPTOGRAPHIC BLOCK LEDGER)
---------------------------------------------------------------------------------
-${state.custody.map(c => `${c.time} | ${c.actor} | ${c.action}\nDetail: ${c.detail}\nEntry SHA-256: ${c.hash}\n`).join('\n')}
+================================================================================
+CHAIN OF CUSTODY AUDIT TRAIL
+================================================================================
+${state.custody.map(c => `${c.time} | ${c.actor} | ${c.action} — ${c.detail}\nBlock SHA-256: ${c.hash}\n`).join('\n')}
 `;
 
   const blob = new Blob([manifest], { type: 'text/plain;charset=utf-8' });
