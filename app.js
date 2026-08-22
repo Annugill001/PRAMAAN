@@ -8,7 +8,6 @@ function createPRNG(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-// String to 32-bit Integer Seed
 function stringToSeed(str) {
   let hash = 0;
   const s = str.trim().toLowerCase();
@@ -18,7 +17,6 @@ function stringToSeed(str) {
   }
   return hash;
 }
-// In-place Deterministic Array Shuffler (Fisher-Yates)
 function seededShuffle(array, rng) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -27,7 +25,7 @@ function seededShuffle(array, rng) {
   }
   return arr;
 }
-// --- Content Bank (Independent Real Social Captions) ---
+
 const bankIG = [
   "Early morning espresso and journaling before the sprint starts.",
   "Golden hour hits different from this rooftop view ✨",
@@ -59,6 +57,7 @@ const bankFB = [
   "Weekend DIY home garden project is finally done. Fresh basil and tomatoes coming soon.",
   "Quarterly community book club meetup concluded. Wonderful discussions shared."
 ];
+
 const bankTW = [
   "Coffee before opening the repository. #DevLife",
   "Clean code and concise documentation save days of post-incident triage.",
@@ -73,32 +72,22 @@ const bankTW = [
   "Zero-trust architecture isn't a feature, it is an operating mindset."
 ];
 
-// Natural, Plain-English Suspicious Comments and Reasons
+// Innocent Victim Posts
+const bankVictimPosts = [
+  "Working on my research paper submission today. Coffee is the only fuel.",
+  "Weekend volunteering drive at the city animal shelter was so fulfilling 🐾",
+  "Met college alumni after long time for Sunday brunch! Great memories.",
+  "Organizing books and updating digital notes before semester finals.",
+  "Evening walk around Connaught Place with childhood friends."
+];
+
 const bankSuspiciousComments = [
-  { 
-    text: "Work is done. Left the parcel at the designated drop spot, go check it.", 
-    reason: "Suspect was instructed about a secret physical drop-off and unverified parcel handover." 
-  },
-  { 
-    text: "Delete this message immediately after reading, contact me on the burner number.", 
-    reason: "Deliberate attempt to destroy chat history and switch to an untraceable burner line." 
-  },
-  { 
-    text: "Sent the confidential files and passwords to your secondary private handle.", 
-    reason: "Unauthorized transmission of confidential files and passwords to a secondary account." 
-  },
-  { 
-    text: "Let's meet at the secret location tonight at 11 PM without telling anyone.", 
-    reason: "Planning an undisclosed late-night meeting without leaving official digital traces." 
-  },
-  { 
-    text: "Payment transfer is confirmed off-the-books, verify the secret code.", 
-    reason: "Secret, unrecorded payment confirmation executed through private transaction channels." 
-  },
-  { 
-    text: "Cyber monitoring is active in this area, turn your phone off right now.", 
-    reason: "Direct instruction to evade law enforcement surveillance and cellular location tracking." 
-  }
+  { text: "Work is done. Left the parcel at the designated drop spot, go check it.", reason: "Suspect was instructed about a secret physical drop-off and unverified parcel handover." },
+  { text: "Delete this message immediately after reading, contact me on the burner number.", reason: "Deliberate attempt to destroy chat history and switch to an untraceable burner line." },
+  { text: "Sent the confidential files and passwords to your secondary private handle.", reason: "Unauthorized transmission of confidential files and passwords to a secondary account." },
+  { text: "Let's meet at the secret location tonight at 11 PM without telling anyone.", reason: "Planning an undisclosed late-night meeting without leaving official digital traces." },
+  { text: "Payment transfer is confirmed off-the-books, verify the secret code.", reason: "Secret, unrecorded payment confirmation executed through private transaction channels." },
+  { text: "Cyber monitoring is active in this area, turn your phone off right now.", reason: "Direct instruction to evade law enforcement surveillance and cellular location tracking." }
 ];
 
 const bankLocations = [
@@ -125,7 +114,6 @@ const bankContacts = [
   "wanderer_jay", "cafe_hopper", "alpha_node", "data_wiz", "cyber_ninja"
 ];
 
-// True Cryptographic SHA-256 (Web Crypto API)
 async function computeRealSHA256(message) {
   const msgUint8 = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
@@ -133,49 +121,52 @@ async function computeRealSHA256(message) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Generate Fixed Profile Data for ANY Name (Categorized Relationship Hierarchy)
-function generateForensicProfile(inputName) {
+// Generate Fixed Profile Data with Dynamic Context (Mutual vs Frequent Contacts)
+function generateForensicProfile(inputName, inputVictim) {
   const name = inputName.trim() || "Annu Gill";
-  const seedInt = stringToSeed(name);
+  const hasVictim = (inputVictim && inputVictim.trim().length > 0);
+  const victimName = hasVictim ? inputVictim.trim() : "";
+  
+  const seedInt = stringToSeed(name + "|" + (victimName || "SOLO_MODE"));
   const rng = createPRNG(seedInt);
   const cleanHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '');
+  const cleanVictimHandle = hasVictim ? victimName.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '') : "unassigned_victim";
 
   const shuffledIG = seededShuffle(bankIG, rng);
   const shuffledFB = seededShuffle(bankFB, rng);
   const shuffledTW = seededShuffle(bankTW, rng);
   const shuffledContacts = seededShuffle(bankContacts, rng);
 
-  // Group 1: High Frequency Conspirators (Direct Threats linked to Suspect)
+  // Group 1: High-Risk Co-Conspirators
   const conspirators = shuffledContacts.slice(0, 3).map((c, idx) => {
     const totalInteractions = 12 + Math.floor(rng() * 14);
-    const suspiciousComments = 3 + Math.floor(rng() * 5);
     return {
       handle: `@${c}`,
       type: 'conspirator',
       totalInteractions,
-      suspiciousComments,
-      linkedPlatformIndex: idx % 3, // Specifically attached to IG, FB or TW
+      suspiciousComments: 3 + Math.floor(rng() * 4),
+      linkedPlatformIndex: idx % 3,
       riskLevel: "HIGH-FREQUENCY CONSPIRATOR",
       lastKnownCoord: bankLocations[Math.floor(rng() * bankLocations.length)].name
     };
   });
 
-  // Group 2: Mutual / Common Circle Contacts (Common with Victim / Case)
-  const mutualContacts = shuffledContacts.slice(3, 7).map((c, idx) => {
-    const totalInteractions = 2 + Math.floor(rng() * 5);
+  // Group 2: Dynamic Contacts (Mutual Bridge if Victim exists, else Frequent Regular Contacts)
+  const secondaryContacts = shuffledContacts.slice(3, 7).map((c, idx) => {
+    const totalInteractions = 5 + Math.floor(rng() * 8);
     return {
       handle: `@${c}`,
-      type: 'mutual',
-      totalInteractions,
+      type: hasVictim ? 'mutual' : 'frequent',
+      totalInteractions: totalInteractions,
       suspiciousComments: 0,
-      linkedPlatformIndex: idx % 2, // Attached to general profile
-      riskLevel: "MUTUAL NETWORK NODE",
+      relation: hasVictim ? `Mutual Connection with ${victimName}` : `Regular Frequent Contact (${totalInteractions} interactions)`,
+      linkedPlatformIndex: idx % 2,
+      riskLevel: hasVictim ? "COMMON CIRCLE BRIDGE" : "REGULAR FREQUENT ASSOCIATE",
       lastKnownCoord: bankLocations[Math.floor(rng() * bankLocations.length)].name
     };
   });
 
-  const allNetworkNodes = [...conspirators, ...mutualContacts];
-
+  const allNetworkNodes = [...conspirators, ...secondaryContacts];
   const posts = [];
   let itemCounter = 1;
 
@@ -183,7 +174,7 @@ function generateForensicProfile(inputName) {
   const countFB = 2 + Math.floor(rng() * 4);
   const countTW = 3 + Math.floor(rng() * 6);
 
-  // Instagram Items
+  // Suspect Instagram Items
   for (let i = 0; i < countIG; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
     const dev = bankDevices[Math.floor(rng() * bankDevices.length)];
@@ -215,7 +206,7 @@ function generateForensicProfile(inputName) {
     });
   }
 
-  // Facebook Items
+  // Suspect Facebook Items
   for (let i = 0; i < countFB; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
     const topContact = conspirators[(i + 1) % conspirators.length].handle.replace('@', '');
@@ -246,7 +237,7 @@ function generateForensicProfile(inputName) {
     });
   }
 
-  // X/Twitter Items
+  // Suspect Twitter Items
   for (let i = 0; i < countTW; i++) {
     const loc = bankLocations[Math.floor(rng() * bankLocations.length)];
     const topContact = conspirators[(i + 2) % conspirators.length].handle.replace('@', '');
@@ -278,10 +269,35 @@ function generateForensicProfile(inputName) {
     });
   }
 
+  // Victim Public Reference Posts
+  const victimPosts = [];
+  if (hasVictim) {
+    let vCounter = 1;
+    for (let i = 0; i < 4; i++) {
+      const loc = bankLocations[(i + 3) % bankLocations.length];
+      const contactName = secondaryContacts[i % secondaryContacts.length].handle;
+      victimPosts.push({
+        id: `VIC${String(vCounter++).padStart(4, '0')}`,
+        platform: i % 2 === 0 ? "Instagram" : "Facebook",
+        handle: `@${cleanVictimHandle}`,
+        time: `2026-03-${String(10 + i * 4).padStart(2, '0')}T14:30:00`,
+        content: bankVictimPosts[i % bankVictimPosts.length],
+        location: loc.name,
+        comment: `[${contactName}]: "Awesome seeing you there!"`,
+        isSuspicious: false,
+        status: "INNOCENT / NORMAL"
+      });
+    }
+  }
+
   const caseNum = 1000 + Math.floor(rng() * 8999);
 
   return {
     person: name,
+    hasVictim: hasVictim,
+    victim: victimName,
+    victimHandle: `@${cleanVictimHandle}`,
+    victimPosts: victimPosts,
     caseId: `PRM-2026-${caseNum}`,
     category: "Cross-Platform Digital Footprint",
     profiles: [
@@ -290,20 +306,24 @@ function generateForensicProfile(inputName) {
       { platform: "X (Twitter)", handle: `@${cleanHandle}`, followers: 620 + Math.floor(rng() * 1900), following: 100 + Math.floor(rng() * 200) }
     ],
     conspirators: conspirators,
-    mutualContacts: mutualContacts,
+    mutualContacts: secondaryContacts,
     contactAnalysis: allNetworkNodes,
     sharedContacts: allNetworkNodes.map(n => n.handle.replace('@', '')),
     posts: posts.sort((a, b) => new Date(b.time) - new Date(a.time))
   };
 }
 
-// Global App State
-let activeTargetData = generateForensicProfile("Annu Gill");
+// Global App State & View Toggles
+let activeTargetData = generateForensicProfile("Annu Gill", "");
+let currentVaultView = 'suspect';
+let currentTimelineView = 'suspect';
+
 const state = {
   caseId: activeTargetData.caseId,
   investigator: "Insp. R. Sharma",
   badge: "RJ-2291",
   evidence: [],
+  victimEvidence: [],
   custody: []
 };
 
@@ -341,7 +361,9 @@ function switchTab(tabId) {
 // 01 Setup Action
 function initiateCaseAction() {
   const enteredName = document.getElementById('inHandle').value || "Annu Gill";
-  activeTargetData = generateForensicProfile(enteredName);
+  const enteredVictim = document.getElementById('inVictim') ? document.getElementById('inVictim').value.trim() : "";
+  
+  activeTargetData = generateForensicProfile(enteredName, enteredVictim);
 
   state.caseId = activeTargetData.caseId;
   state.investigator = document.getElementById('inInvestigator').value || "Insp. R. Sharma";
@@ -355,8 +377,8 @@ function initiateCaseAction() {
   }
 
   state.custody = [];
-  logCustody("Case Initialization", state.investigator, `Case ${state.caseId} initialized for target ${activeTargetData.person}`);
-  toast(`Case ${state.caseId} Created for ${activeTargetData.person}!`);
+  logCustody("Case Initialization", state.investigator, `Case ${state.caseId} initialized: Target Suspect (${activeTargetData.person})${activeTargetData.hasVictim ? ' vs Complainant (' + activeTargetData.victim + ')' : ' [Single Focus Mode]'}`);
+  toast(`Case ${state.caseId} Created!`);
   switchTab('collect');
 }
 
@@ -366,7 +388,7 @@ async function runCollectionAction() {
   btn.disabled = true;
   btn.textContent = 'Ingesting & Computing SHA-256...';
 
-  // Compute Real Cryptographic SHA-256 for each unique post
+  // Suspect Hashed Posts
   const hashedPosts = [];
   for (const post of activeTargetData.posts) {
     const rawPayload = `${post.id}|${post.platform}|${post.time}|${post.location}|${post.content}|${post.meta}|${activeTargetData.person}|${post.threatFlag}`;
@@ -375,16 +397,36 @@ async function runCollectionAction() {
   }
   state.evidence = hashedPosts;
 
-  await logCustody("Identity Resolution", state.investigator, `Resolved multi-platform accounts [IG: ${activeTargetData.profiles[0].handle}], [FB: ${activeTargetData.profiles[1].handle}], [X: ${activeTargetData.profiles[2].handle}] to subject ${activeTargetData.person}`);
-  await logCustody("Evidence Ingestion", state.investigator, `Extracted ${state.evidence.length} non-repeatable forensic artifacts across 3 platforms with binary SHA-256 signatures`);
+  // Victim Baseline Hash
+  const hashedVictimPosts = [];
+  for (const vPost of activeTargetData.victimPosts) {
+    const rawPayload = `${vPost.id}|${vPost.platform}|${vPost.time}|${vPost.location}|${vPost.content}|${activeTargetData.victim}`;
+    const realHash = await computeRealSHA256(rawPayload);
+    hashedVictimPosts.push({ ...vPost, hash: realHash });
+  }
+  state.victimEvidence = hashedVictimPosts;
+
+  await logCustody("Identity Resolution", state.investigator, `Extracted digital footprint for Suspect [${activeTargetData.person}]${activeTargetData.hasVictim ? ' with mutual nodes connected to Victim [' + activeTargetData.victim + ']' : ' in single suspect focus mode'}`);
+  await logCustody("Evidence Ingestion", state.investigator, `Sealed ${state.evidence.length} suspect artifacts under Section 63B BSA`);
 
   document.getElementById('collectLog').innerHTML = `
-    <div style="font-family:var(--mono); color:var(--seal); line-height:1.8; text-align:left; font-size:13px;">
-      ✓ Subject Target Identity: <b>${activeTargetData.person.toUpperCase()}</b><br>
-      ✓ Multi-Platform Linking: [Instagram: ${activeTargetData.profiles[0].handle}] · [Facebook: ${activeTargetData.profiles[1].handle}] · [X: ${activeTargetData.profiles[2].handle}]<br>
-      ✓ Ingested Records: ${state.evidence.length} distinct, non-duplicate digital evidence items<br>
-      ✓ Primary Suspect Contacts Identified: ${activeTargetData.conspirators.map(c => c.handle).join(', ')}<br>
-      ✓ Cryptographic SHA-256 Register Sealed under Section 63B BSA.
+    <div style="font-family:var(--mono); color:var(--seal); line-height:1.9; text-align:left; font-size:13px;">
+      <b>[TARGET 01 - SUSPECT EXTRACTION]</b><br>
+      ✓ Identity: <b>${activeTargetData.person.toUpperCase()}</b><br>
+      ✓ Extracted Artifacts: ${state.evidence.length} non-repeatable records across 3 platforms<br>
+      ✓ Suspect Conspirator Leads: ${activeTargetData.conspirators.map(c => c.handle).join(', ')}<br>
+      ✓ ${activeTargetData.hasVictim ? 'Mutual Network Nodes' : 'Frequently Contacted Leads'}: ${activeTargetData.mutualContacts.map(m => m.handle).join(', ')}<br><br>
+
+      <b>[TARGET 02 - CASE CORRELATION]</b><br>
+      ${activeTargetData.hasVictim ? `
+        ✓ Complainant: <b>${activeTargetData.victim.toUpperCase()}</b> (${activeTargetData.victimHandle})<br>
+        ✓ Cross-Entity Overlap: ${activeTargetData.mutualContacts.length} Mutual Circle Bridges identified<br>
+        ✓ Reference Artifacts Extracted: ${state.victimEvidence.length} baseline records available.
+      ` : `
+        <span style="color:var(--ink-dim);">✓ Mode: <b>Single-Target Direct Investigation</b> (No Victim profile linked. All mapped nodes are Suspect's frequent contacts).</span>
+      `}<br><br>
+      
+      ✓ <b>Cryptographic Register:</b> All artifacts signed and sealed into immutable block ledger.
     </div>
   `;
 
@@ -394,111 +436,225 @@ async function runCollectionAction() {
 
   btn.disabled = false;
   btn.textContent = 'Extraction Complete ✓';
-  toast(`${state.evidence.length} Forensic Records Ingested!`);
+  toast(`${state.evidence.length} Records Ingested!`);
   setTimeout(() => switchTab('vault'), 700);
 }
 
-// 03 Vault Render (Hover Tooltip with Strict Grid Lock)
+// 03 Vault Toggle & Render
+function switchVaultView(entity) {
+  currentVaultView = entity;
+  const btnS = document.getElementById('btnVaultSuspect');
+  const btnV = document.getElementById('btnVaultVictim');
+  
+  if (btnS && btnV) {
+    btnS.className = `entity-tab-btn ${entity === 'suspect' ? 'active' : ''}`;
+    btnV.className = `entity-tab-btn ${entity === 'victim' ? 'victim-active' : ''}`;
+  }
+  renderVault();
+}
+
 function renderVault() {
   const stats = document.getElementById('vaultStats');
-  const suspiciousCount = state.evidence.filter(e => e.isSuspicious).length;
-
-  if (stats) {
-    stats.innerHTML = `
-      <div class="stat"><div class="n">${state.evidence.length}</div><div class="l">Total Artifacts</div></div>
-      <div class="stat"><div class="n">${state.evidence.length}</div><div class="l">SHA-256 Verified</div></div>
-      <div class="stat"><div class="n" style="color:#EF4444;">${suspiciousCount}</div><div class="l">Flagged Suspicious</div></div>
-      <div class="stat"><div class="n">3</div><div class="l">Linked Platforms</div></div>
-    `;
-  }
-
   const list = document.getElementById('evList');
   if (!list) return;
   list.innerHTML = '';
 
-  state.evidence.forEach(ev => {
-    const row = document.createElement('div');
-    row.className = `ev-row ${ev.isSuspicious ? 'suspicious-row' : ''}`;
-    const tag = ev.platform.toLowerCase().includes('insta') ? 'instagram' : ev.platform.toLowerCase().includes('face') ? 'facebook' : 'twitter';
-    
-    row.innerHTML = `
-      <div><span class="tag ${tag}">${ev.platform}</span></div>
+  // View: Suspect Evidence
+  if (currentVaultView === 'suspect') {
+    const suspiciousCount = state.evidence.filter(e => e.isSuspicious).length;
+    if (stats) {
+      stats.innerHTML = `
+        <div class="stat"><div class="n">${state.evidence.length}</div><div class="l">Suspect Artifacts</div></div>
+        <div class="stat"><div class="n">${state.evidence.length}</div><div class="l">SHA-256 Verified</div></div>
+        <div class="stat"><div class="n" style="color:#EF4444;">${suspiciousCount}</div><div class="l">Flagged Suspicious</div></div>
+        <div class="stat"><div class="n">3</div><div class="l">Linked Platforms</div></div>
+      `;
+    }
+
+    state.evidence.forEach(ev => {
+      const row = document.createElement('div');
+      row.className = `ev-row ${ev.isSuspicious ? 'suspicious-row' : ''}`;
+      const tag = ev.platform.toLowerCase().includes('insta') ? 'instagram' : ev.platform.toLowerCase().includes('face') ? 'facebook' : 'twitter';
       
-      <!-- Content Cell with Embedded Floating Tooltip -->
-      <div class="ev-cell-content">
-        <div class="ev-text">
-          <b>[${ev.id}]</b> "${ev.content}"
-          ${ev.isSuspicious ? ` <span class="tag suspicious-tag">FLAGGED</span>` : ''}
+      row.innerHTML = `
+        <div><span class="tag ${tag}">${ev.platform}</span></div>
+        <div class="ev-cell-content">
+          <div class="ev-text">
+            <b>[${ev.id}]</b> "${ev.content}"
+            ${ev.isSuspicious ? ` <span class="tag suspicious-tag">FLAGGED</span>` : ''}
+          </div>
+          <div class="ev-tooltip">
+            <div class="tip-title"><b>[${ev.id}]</b> "${ev.content}"</div>
+            ${ev.isSuspicious ? `
+              <div class="tip-reason">
+                <b>Forensic Audit Reason:</b> ${ev.postReason}
+              </div>
+            ` : `
+              <div style="font-size:11.5px; color:var(--ink-dim);">
+                Verified baseline artifact log with no integrity or geolocation discrepancies.
+              </div>
+            `}
+          </div>
         </div>
+        <div class="hash" title="${ev.hash}">${short(ev.hash)}</div>
+        <div style="color:var(--ink-faint); font-size:11.5px;">${fmtTime(ev.time)}</div>
+        <div class="verified" style="${ev.isSuspicious ? 'color:#EF4444;' : ''}">
+          ${ev.isSuspicious ? 'SUSPICIOUS' : 'VERIFIED'}
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  } 
+  // View: Victim Reference Data
+  else {
+    if (!activeTargetData.hasVictim) {
+      if (stats) {
+        stats.innerHTML = `
+          <div class="stat"><div class="n" style="color:var(--ink-faint);">0</div><div class="l">Victim Data</div></div>
+          <div class="stat"><div class="n" style="color:var(--ink-faint);">N/A</div><div class="l">Status</div></div>
+          <div class="stat"><div class="n" style="color:var(--ink-faint);">0</div><div class="l">Mutual Links</div></div>
+          <div class="stat"><div class="n" style="color:var(--ink-faint);">0</div><div class="l">Platforms</div></div>
+        `;
+      }
+      list.innerHTML = `
+        <div style="padding:40px 20px; text-align:center; color:var(--ink-dim); font-size:13.5px;">
+          <p style="margin-bottom:12px;">🛡️ <b>No Victim / Complainant details added in Case Setup.</b></p>
+          <button type="button" class="btn secondary" onclick="switchTab('setup')">Add Victim Details in Case Setup ↵</button>
+        </div>
+      `;
+      return;
+    }
 
-        <div class="ev-tooltip">
-          <div class="tip-title"><b>[${ev.id}]</b> "${ev.content}"</div>
-          ${ev.isSuspicious ? `
-            <div class="tip-reason">
-              <b>Forensic Audit Reason:</b> ${ev.postReason}
-            </div>
-          ` : `
+    if (stats) {
+      stats.innerHTML = `
+        <div class="stat"><div class="n" style="color:#38BDF8;">${state.victimEvidence.length}</div><div class="l">Victim Records</div></div>
+        <div class="stat"><div class="n" style="color:#38BDF8;">${state.victimEvidence.length}</div><div class="l">Integrity Verified</div></div>
+        <div class="stat"><div class="n" style="color:#3ECF8E;">${activeTargetData.mutualContacts.length}</div><div class="l">Mutual Circles</div></div>
+        <div class="stat"><div class="n">2</div><div class="l">Public Channels</div></div>
+      `;
+    }
+
+    state.victimEvidence.forEach(vEv => {
+      const row = document.createElement('div');
+      row.className = 'ev-row';
+      const tag = vEv.platform.toLowerCase().includes('insta') ? 'instagram' : 'facebook';
+
+      row.innerHTML = `
+        <div><span class="tag ${tag}">${vEv.platform}</span></div>
+        <div class="ev-cell-content">
+          <div class="ev-text">
+            <b>[${vEv.id}]</b> "${vEv.content}"
+          </div>
+          <div class="ev-tooltip">
+            <div class="tip-title"><b>[${vEv.id}] ${activeTargetData.victim}</b></div>
+            <div style="font-size:12px; color:#38BDF8; margin-bottom:4px;">${vEv.comment}</div>
             <div style="font-size:11.5px; color:var(--ink-dim);">
-              Verified baseline artifact log with no integrity or geolocation discrepancies.
+              Verified public baseline interaction matching case mutual circle.
             </div>
-          `}
+          </div>
         </div>
-      </div>
-
-      <div class="hash" title="${ev.hash}">${short(ev.hash)}</div>
-      <div style="color:var(--ink-faint); font-size:11.5px;">${fmtTime(ev.time)}</div>
-      <div class="verified" style="${ev.isSuspicious ? 'color:#EF4444;' : ''}">
-        ${ev.isSuspicious ? 'SUSPICIOUS' : 'VERIFIED'}
-      </div>
-    `;
-    list.appendChild(row);
-  });
+        <div class="hash" title="${vEv.hash}">${short(vEv.hash)}</div>
+        <div style="color:var(--ink-faint); font-size:11.5px;">${fmtTime(vEv.time)}</div>
+        <div class="verified" style="color:#38BDF8;">
+          VICTIM LOG
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  }
 }
 
 function verifyHashesAction() {
   toast("Cryptographic Integrity Audit: 0 Alterations Detected / 100% Intact");
 }
 
-// 04 Timeline Render with Clean Professional Labels
+// 04 Timeline Toggle & Render
+function switchTimelineView(entity) {
+  currentTimelineView = entity;
+  const btnS = document.getElementById('btnTlSuspect');
+  const btnV = document.getElementById('btnTlVictim');
+  
+  if (btnS && btnV) {
+    btnS.className = `entity-tab-btn ${entity === 'suspect' ? 'active' : ''}`;
+    btnV.className = `entity-tab-btn ${entity === 'victim' ? 'victim-active' : ''}`;
+  }
+  renderTimeline();
+}
+
 function renderTimeline() {
   const el = document.getElementById('timelineList');
   if (!el) return;
   el.innerHTML = '';
 
-  state.evidence.forEach(ev => {
-    const item = document.createElement('div');
-    item.className = `tl-item ${ev.isSuspicious ? 'suspicious' : ''}`;
+  // Suspect Timeline
+  if (currentTimelineView === 'suspect') {
+    state.evidence.forEach(ev => {
+      const item = document.createElement('div');
+      item.className = `tl-item ${ev.isSuspicious ? 'suspicious' : ''}`;
 
-    item.innerHTML = `
-      <div class="tl-time">${fmtTime(ev.time)} · <b>${ev.id}</b> (${ev.platform})</div>
-      <div class="tl-body">
-        <div style="color:var(--amber); font-weight:600; font-size:12px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
-          <span><b>${ev.handle}</b> · ${ev.location} · Likes: ${ev.likes} ${ev.retweets ? '· Retweets: ' + ev.retweets : ''}</span>
-          ${ev.isSuspicious ? '<span style="color:#EF4444; font-weight:700; font-family:var(--mono); font-size:11px;">[FLAGGED] ' + ev.threatFlag + '</span>' : ''}
-        </div>
-        <div style="font-size:13.5px; color:var(--ink); line-height:1.5; margin-bottom:8px;">"${ev.content}"</div>
-        
-        <!-- Hover Pop-out Box with Clean Labels -->
-        ${ev.isSuspicious ? `
-          <div class="comment-box" title="Hover to view full message and forensic reason">
-            <div><b>Intercepted Comment:</b> ${ev.suspiciousComment}</div>
-            <div class="threat-reason-pill"><b>Suspicion Trigger:</b> ${ev.commentReason}</div>
+      item.innerHTML = `
+        <div class="tl-time">${fmtTime(ev.time)} · <b>${ev.id}</b> (${ev.platform})</div>
+        <div class="tl-body">
+          <div style="color:var(--amber); font-weight:600; font-size:12px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+            <span><b>${ev.handle}</b> · ${ev.location} · Likes: ${ev.likes} ${ev.retweets ? '· Retweets: ' + ev.retweets : ''}</span>
+            ${ev.isSuspicious ? '<span style="color:#EF4444; font-weight:700; font-family:var(--mono); font-size:11px;">[FLAGGED] ' + ev.threatFlag + '</span>' : ''}
           </div>
-        ` : ''}
+          <div style="font-size:13.5px; color:var(--ink); line-height:1.5; margin-bottom:8px;">"${ev.content}"</div>
+          
+          ${ev.isSuspicious ? `
+            <div class="comment-box" title="Hover to view full message and forensic reason">
+              <div><b>Intercepted Comment:</b> ${ev.suspiciousComment}</div>
+              <div class="threat-reason-pill"><b>Suspicion Trigger:</b> ${ev.commentReason}</div>
+            </div>
+          ` : ''}
 
-        <div style="font-family:var(--mono); font-size:11px; color:#A0AEC0; background:rgba(0,0,0,0.25); padding:6px 8px; border-radius:4px;">
-          <b>Device Details:</b> ${ev.meta}
+          <div style="font-family:var(--mono); font-size:11px; color:#A0AEC0; background:rgba(0,0,0,0.25); padding:6px 8px; border-radius:4px;">
+            <b>Device Details:</b> ${ev.meta}
+          </div>
+          <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); margin-top:6px; word-break:break-all;">
+            <b>SHA-256 Signature:</b> ${ev.hash}
+          </div>
         </div>
-        <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); margin-top:6px; word-break:break-all;">
-          <b>SHA-256 Signature:</b> ${ev.hash}
+      `;
+      el.appendChild(item);
+    });
+  } 
+  // Victim Timeline
+  else {
+    if (!activeTargetData.hasVictim) {
+      el.innerHTML = `
+        <div style="padding:30px 20px; text-align:center; color:var(--ink-dim); font-size:13.5px;">
+          🛡️ <b>No Victim account linked.</b><br>
+          <button type="button" class="btn secondary" style="margin-top:10px;" onclick="switchTab('setup')">Add Victim Details in Case Setup ↵</button>
         </div>
-      </div>
-    `;
-    el.appendChild(item);
-  });
+      `;
+      return;
+    }
+
+    state.victimEvidence.forEach(vEv => {
+      const item = document.createElement('div');
+      item.className = 'tl-item';
+      item.innerHTML = `
+        <div class="tl-time">${fmtTime(vEv.time)} · <b>${vEv.id}</b> (${vEv.platform})</div>
+        <div class="tl-body" style="border-left:3px solid #38BDF8;">
+          <div style="color:#38BDF8; font-weight:600; font-size:12px; margin-bottom:4px;">
+            <span><b>${vEv.handle} (${activeTargetData.victim})</b> · 📍 ${vEv.location}</span>
+          </div>
+          <div style="font-size:13.5px; color:var(--ink); line-height:1.5; margin-bottom:8px;">"${vEv.content}"</div>
+          <div style="background:rgba(56, 189, 248, 0.1); border-radius:6px; padding:6px 10px; font-size:12px; color:#BAE6FD; margin-bottom:6px;">
+            <b>Public Mutual Reply:</b> ${vEv.comment}
+          </div>
+          <div style="font-family:var(--mono); font-size:10.5px; color:var(--ink-faint);">
+            <b>SHA-256 Signature:</b> ${vEv.hash}
+          </div>
+        </div>
+      `;
+      el.appendChild(item);
+    });
+  }
 }
 
-// 05 Relationship Graph Render (Realistic Radial Hierarchy & Intelligence Links)
+// 05 Dynamic Graph (Synchronized Canvas + HTML Labels)
 function drawGraph() {
   const canvas = document.getElementById('graphCanvas');
   if (!canvas) return;
@@ -506,146 +662,266 @@ function drawGraph() {
   const w = canvas.width, h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  const cx = w / 2, cy = h / 2;
-
-  // 1. Draw Visual Grid Background for Forensic Aesthetics
+  // Background Grid
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
   ctx.lineWidth = 1;
-  for (let x = 0; x < w; x += 30) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  for (let x = 0; x < w; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+  // Update HTML Bottom Legend Bar dynamically based on Victim presence
+  const legendBottom = document.getElementById('graphLegendBottom');
+  const subText = document.getElementById('graphSubText');
+
+  if (activeTargetData.hasVictim) {
+    if (subText) subText.textContent = "Mapped suspect-to-victim correlation and common mutual circle bridges.";
+    if (legendBottom) {
+      legendBottom.innerHTML = `
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#EAB308;display:inline-block;margin-right:6px;"></i>Suspect Target</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#38BDF8;display:inline-block;margin-right:6px;"></i>Victim / Complainant</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#3ECF8E;display:inline-block;margin-right:6px;"></i>Mutual Circle Bridge</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#EF4444;display:inline-block;margin-right:6px;"></i>Suspect Conspirator</span>
+      `;
+    }
+  } else {
+    if (subText) subText.textContent = "Mapped suspect target profiles and direct frequently contacted associates.";
+    if (legendBottom) {
+      legendBottom.innerHTML = `
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#EAB308;display:inline-block;margin-right:6px;"></i>Primary Suspect</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#9333EA;display:inline-block;margin-right:6px;"></i>Suspect Social Profiles</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#3ECF8E;display:inline-block;margin-right:6px;"></i>Frequently Contacted</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#EF4444;display:inline-block;margin-right:6px;"></i>Suspect Conspirators</span>
+      `;
+    }
   }
-  for (let y = 0; y < h; y += 30) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-  }
 
-  // 2. Center Node: Primary Suspect Target
-  ctx.beginPath();
-  ctx.arc(cx, cy, 26, 0, Math.PI * 2);
-  ctx.fillStyle = '#EAB308'; // Amber Gold
-  ctx.shadowColor = 'rgba(234, 179, 8, 0.6)';
-  ctx.shadowBlur = 15;
-  ctx.fill();
-  ctx.shadowBlur = 0;
+  // SCENARIO A: DUAL MODE (Victim Provided -> Bridge Hierarchy)
+  if (activeTargetData.hasVictim) {
+    const suspectX = 140, suspectY = h / 2 - 20;
+    const victimX = w - 140, victimY = h / 2 - 20;
 
-  ctx.font = 'bold 12px IBM Plex Mono';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.textAlign = 'center';
-  ctx.fillText(activeTargetData.person.toUpperCase(), cx, cy + 42);
-  ctx.font = '9px IBM Plex Mono';
-  ctx.fillStyle = '#FCD34D';
-  ctx.fillText("[PRIMARY SUSPECT]", cx, cy + 54);
-
-  // 3. Inner Ring: Suspect's Owned Social Profiles (Purple Nodes)
-  const profiles = activeTargetData.profiles;
-  profiles.forEach((p, i) => {
-    const ang = (i / profiles.length) * Math.PI * 2 - Math.PI / 2;
-    p._x = cx + 115 * Math.cos(ang);
-    p._y = cy + 105 * Math.sin(ang);
-
-    // Direct solid link: Suspect -> Profile
+    // Suspect Node (Left)
     ctx.beginPath();
-    ctx.strokeStyle = '#B183E6';
-    ctx.lineWidth = 2;
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(p._x, p._y);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(p._x, p._y, 14, 0, Math.PI * 2);
-    ctx.fillStyle = '#9333EA';
-    ctx.fill();
-
-    ctx.font = '10.5px IBM Plex Mono';
-    ctx.fillStyle = '#E9D5FF';
-    ctx.fillText(`${p.platform}`, p._x, p._y + (p._y > cy ? 22 : -16));
-  });
-
-  // 4. Outer Left/Bottom Zone: High-Frequency Conspirators (Red Alert Glowing Nodes)
-  const conspirators = activeTargetData.conspirators;
-  conspirators.forEach((c, i) => {
-    const ang = Math.PI * 0.45 + (i * 0.45); // Clustered in threat arc
-    const nx = cx + 210 * Math.cos(ang);
-    const ny = cy + 185 * Math.sin(ang);
-
-    const parentProfile = profiles[c.linkedPlatformIndex % profiles.length];
-
-    // High-threat active link (Red pulsing connection)
-    ctx.beginPath();
-    ctx.setLineDash([4, 2]);
-    ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
-    ctx.lineWidth = 2;
-    ctx.moveTo(parentProfile._x, parentProfile._y);
-    ctx.lineTo(nx, ny);
-    ctx.stroke();
-    ctx.setLineDash([]); // Reset line dash
-
-    // Red Warning Node
-    ctx.beginPath();
-    ctx.arc(nx, ny, 12, 0, Math.PI * 2);
-    ctx.fillStyle = '#EF4444';
-    ctx.shadowColor = 'rgba(239, 68, 68, 0.7)';
-    ctx.shadowBlur = 10;
+    ctx.arc(suspectX, suspectY, 26, 0, Math.PI * 2);
+    ctx.fillStyle = '#EAB308';
+    ctx.shadowColor = 'rgba(234, 179, 8, 0.6)';
+    ctx.shadowBlur = 15;
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    ctx.font = 'bold 10.5px IBM Plex Mono';
-    ctx.fillStyle = '#FCA5A5';
-    ctx.fillText(`${c.handle} (${c.totalInteractions}x)`, nx, ny + (ny > cy ? 18 : -14));
-    ctx.font = '8.5px IBM Plex Mono';
-    ctx.fillStyle = '#F87171';
-    ctx.fillText("🚨 FREQUENT CONSPIRATOR", nx, ny + (ny > cy ? 28 : -24));
-  });
+    ctx.font = 'bold 12px IBM Plex Mono';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'center';
+    ctx.fillText(activeTargetData.person.toUpperCase(), suspectX, suspectY + 40);
+    ctx.font = '9px IBM Plex Mono';
+    ctx.fillStyle = '#FCD34D';
+    ctx.fillText("[SUSPECT TARGET]", suspectX, suspectY + 52);
 
-  // 5. Outer Top/Right Zone: Mutual / Common Circle Contacts (Cyan/Green Nodes)
-  const mutuals = activeTargetData.mutualContacts;
-  mutuals.forEach((m, i) => {
-    const ang = -Math.PI * 0.15 - (i * 0.45); // Clustered in mutual arc
-    const mx = cx + 210 * Math.cos(ang);
-    const my = cy + 185 * Math.sin(ang);
-
-    const parentProfile = profiles[m.linkedPlatformIndex % profiles.length];
-
-    // Subtle green link (Normal mutual association)
+    // Victim Node (Right)
     ctx.beginPath();
-    ctx.strokeStyle = 'rgba(62, 207, 142, 0.4)';
-    ctx.lineWidth = 1.2;
-    ctx.moveTo(parentProfile._x, parentProfile._y);
-    ctx.lineTo(mx, my);
-    ctx.stroke();
-
-    // Mutual Circle Node
-    ctx.beginPath();
-    ctx.arc(mx, my, 9, 0, Math.PI * 2);
-    ctx.fillStyle = '#3ECF8E';
+    ctx.arc(victimX, victimY, 24, 0, Math.PI * 2);
+    ctx.fillStyle = '#38BDF8';
+    ctx.shadowColor = 'rgba(56, 189, 248, 0.6)';
+    ctx.shadowBlur = 15;
     ctx.fill();
+    ctx.shadowBlur = 0;
 
-    ctx.font = '10px IBM Plex Mono';
-    ctx.fillStyle = '#A7F3D0';
-    ctx.fillText(m.handle, mx, my + (my > cy ? 16 : -12));
-    ctx.font = '8px IBM Plex Mono';
-    ctx.fillStyle = '#6EE7B7';
-    ctx.fillText("MUTUAL CIRCLE", mx, my + (my > cy ? 25 : -20));
-  });
+    ctx.font = 'bold 12px IBM Plex Mono';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(activeTargetData.victim.toUpperCase(), victimX, victimY + 38);
+    ctx.font = '9px IBM Plex Mono';
+    ctx.fillStyle = '#7DD3FC';
+    ctx.fillText("[VICTIM / SUBJECT]", victimX, victimY + 50);
 
-  // 6. Forensic Legend Overlay on Top-Right Corner
-  ctx.textAlign = 'left';
-  ctx.font = '9px IBM Plex Mono';
-  
-  // Legend 1: Primary Target
-  ctx.fillStyle = '#EAB308'; ctx.fillRect(w - 180, 16, 10, 10);
-  ctx.fillStyle = '#CBD5E1'; ctx.fillText("Primary Suspect", w - 162, 24);
+    // Center Mutual Bridge Nodes
+    activeTargetData.mutualContacts.forEach((m, i) => {
+      const mx = w / 2;
+      const my = 70 + (i * 65);
 
-  // Legend 2: Suspect Profile
-  ctx.fillStyle = '#9333EA'; ctx.fillRect(w - 180, 32, 10, 10);
-  ctx.fillStyle = '#CBD5E1'; ctx.fillText("Suspect Social Profiles", w - 162, 40);
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(62, 207, 142, 0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(suspectX, suspectY);
+      ctx.lineTo(mx, my);
+      ctx.stroke();
 
-  // Legend 3: Co-Conspirator
-  ctx.fillStyle = '#EF4444'; ctx.fillRect(w - 180, 48, 10, 10);
-  ctx.fillStyle = '#CBD5E1'; ctx.fillText("Frequent Conspirator", w - 162, 56);
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(victimX, victimY);
+      ctx.lineTo(mx, my);
+      ctx.stroke();
 
-  // Legend 4: Mutual Circle
-  ctx.fillStyle = '#3ECF8E'; ctx.fillRect(w - 180, 64, 10, 10);
-  ctx.fillStyle = '#CBD5E1'; ctx.fillText("Mutual Circle Node", w - 162, 72);
+      ctx.beginPath();
+      ctx.arc(mx, my, 11, 0, Math.PI * 2);
+      ctx.fillStyle = '#3ECF8E';
+      ctx.fill();
+
+      ctx.font = 'bold 10px IBM Plex Mono';
+      ctx.fillStyle = '#A7F3D0';
+      ctx.fillText(m.handle, mx, my - 14);
+      ctx.font = '8px IBM Plex Mono';
+      ctx.fillStyle = '#6EE7B7';
+      ctx.fillText("MUTUAL BRIDGE", mx, my + 20);
+    });
+
+    // Bottom Conspirators
+    activeTargetData.conspirators.forEach((c, i) => {
+      const cx_pos = 70 + (i * 90);
+      const cy_pos = h - 60;
+
+      ctx.beginPath();
+      ctx.setLineDash([4, 2]);
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+      ctx.lineWidth = 2;
+      ctx.moveTo(suspectX, suspectY);
+      ctx.lineTo(cx_pos, cy_pos);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.beginPath();
+      ctx.arc(cx_pos, cy_pos, 11, 0, Math.PI * 2);
+      ctx.fillStyle = '#EF4444';
+      ctx.shadowColor = 'rgba(239, 68, 68, 0.7)';
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.font = 'bold 10px IBM Plex Mono';
+      ctx.fillStyle = '#FCA5A5';
+      ctx.fillText(`${c.handle} (${c.totalInteractions}x)`, cx_pos, cy_pos + 20);
+      ctx.font = '8px IBM Plex Mono';
+      ctx.fillStyle = '#F87171';
+      ctx.fillText("🚨 CO-CONSPIRATOR", cx_pos, cy_pos + 30);
+    });
+
+    // Top-Left In-Canvas Legend
+    ctx.textAlign = 'left';
+    ctx.font = '9px IBM Plex Mono';
+    ctx.fillStyle = '#EAB308'; ctx.fillRect(20, 16, 10, 10);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Suspect", 36, 24);
+    ctx.fillStyle = '#38BDF8'; ctx.fillRect(20, 32, 10, 10);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Victim / Complainant", 36, 40);
+    ctx.fillStyle = '#3ECF8E'; ctx.fillRect(20, 48, 10, 10);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Mutual Circle Bridge", 36, 56);
+    ctx.fillStyle = '#EF4444'; ctx.fillRect(20, 64, 10, 10);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Suspect Conspirator", 36, 72);
+  } 
+  // SCENARIO B: SOLO MODE (No Victim -> Suspect Center Radial Graph with Frequent Contacts)
+  else {
+    const cx = w / 2, cy = h / 2;
+
+    // Center Suspect Node
+    ctx.beginPath();
+    ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+    ctx.fillStyle = '#EAB308';
+    ctx.shadowColor = 'rgba(234, 179, 8, 0.6)';
+    ctx.shadowBlur = 15;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.font = 'bold 12px IBM Plex Mono';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'center';
+    ctx.fillText(activeTargetData.person.toUpperCase(), cx, cy + 40);
+    ctx.font = '9px IBM Plex Mono';
+    ctx.fillStyle = '#FCD34D';
+    ctx.fillText("[SUSPECT TARGET]", cx, cy + 52);
+
+    // Inner Ring: Suspect Social Platforms
+    const profiles = activeTargetData.profiles;
+    profiles.forEach((p, i) => {
+      const ang = (i / profiles.length) * Math.PI * 2 - Math.PI / 2;
+      p._x = cx + 115 * Math.cos(ang);
+      p._y = cy + 105 * Math.sin(ang);
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#B183E6';
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(p._x, p._y);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(p._x, p._y, 13, 0, Math.PI * 2);
+      ctx.fillStyle = '#9333EA';
+      ctx.fill();
+
+      ctx.font = '10px IBM Plex Mono';
+      ctx.fillStyle = '#E9D5FF';
+      ctx.fillText(p.platform, p._x, p._y + (p._y > cy ? 20 : -14));
+    });
+
+    // Outer Arc Left: Co-Conspirators (Red Alert)
+    activeTargetData.conspirators.forEach((c, i) => {
+      const ang = Math.PI * 0.45 + (i * 0.45);
+      const nx = cx + 210 * Math.cos(ang);
+      const ny = cy + 180 * Math.sin(ang);
+      const parentProfile = profiles[c.linkedPlatformIndex % profiles.length];
+
+      ctx.beginPath();
+      ctx.setLineDash([4, 2]);
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+      ctx.lineWidth = 2;
+      ctx.moveTo(parentProfile._x, parentProfile._y);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.beginPath();
+      ctx.arc(nx, ny, 11, 0, Math.PI * 2);
+      ctx.fillStyle = '#EF4444';
+      ctx.shadowColor = 'rgba(239, 68, 68, 0.7)';
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.font = 'bold 10px IBM Plex Mono';
+      ctx.fillStyle = '#FCA5A5';
+      ctx.fillText(`${c.handle} (${c.totalInteractions}x)`, nx, ny + (ny > cy ? 18 : -14));
+      ctx.font = '8px IBM Plex Mono';
+      ctx.fillStyle = '#F87171';
+      ctx.fillText("🚨 CO-CONSPIRATOR", nx, ny + (ny > cy ? 28 : -22));
+    });
+
+    // Outer Arc Right: Frequently Contacted Associates (Green)
+    activeTargetData.mutualContacts.forEach((m, i) => {
+      const ang = -Math.PI * 0.15 - (i * 0.45);
+      const mx = cx + 210 * Math.cos(ang);
+      const my = cy + 180 * Math.sin(ang);
+      const parentProfile = profiles[m.linkedPlatformIndex % profiles.length];
+
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(62, 207, 142, 0.5)';
+      ctx.lineWidth = 1.2;
+      ctx.moveTo(parentProfile._x, parentProfile._y);
+      ctx.lineTo(mx, my);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(mx, my, 10, 0, Math.PI * 2);
+      ctx.fillStyle = '#3ECF8E';
+      ctx.fill();
+
+      ctx.font = '10px IBM Plex Mono';
+      ctx.fillStyle = '#A7F3D0';
+      ctx.fillText(`${m.handle} (${m.totalInteractions}x)`, mx, my + (my > cy ? 16 : -12));
+      ctx.font = '8px IBM Plex Mono';
+      ctx.fillStyle = '#6EE7B7';
+      ctx.fillText("FREQUENT ASSOCIATE", mx, my + (my > cy ? 25 : -20));
+    });
+
+    // Top-Left In-Canvas Legend (Solo Mode)
+    ctx.textAlign = 'left';
+    ctx.font = '9px IBM Plex Mono';
+    ctx.fillStyle = '#EAB308'; ctx.fillRect(20, 16, 10, 10);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Primary Suspect", 36, 24);
+    ctx.fillStyle = '#9333EA'; ctx.fillRect(20, 32, 10, 10);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Suspect Social Profiles", 36, 40);
+    ctx.fillStyle = '#3ECF8E'; ctx.fillRect(20, 48, 10, 10);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Frequently Contacted", 36, 56);
+    ctx.fillStyle = '#EF4444'; ctx.fillRect(20, 64, 10, 10);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Suspect Conspirators", 36, 72);
+  }
 }
 
 // 06 Custody Logger
@@ -673,14 +949,13 @@ function renderCustody() {
   });
 }
 
-// 07 Download Certified Section 63B BSA Forensic PDF (With Full Text Wrapping & Relationship Graph)
+// 07 Download Certified Section 63B BSA Forensic PDF
 async function downloadForensicPDF() {
   if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
     downloadForensicReport();
     return;
   }
 
-  // Ensure relationship graph canvas is freshly rendered before capturing
   drawGraph();
 
   const { jsPDF } = window.jspdf;
@@ -690,7 +965,6 @@ async function downloadForensicPDF() {
   const accent = [62, 207, 142];
   const redAlert = [185, 28, 28];
 
-  // Header Banner
   doc.setFillColor(...primary);
   doc.rect(0, 0, 210, 30, 'F');
 
@@ -708,9 +982,9 @@ async function downloadForensicPDF() {
   doc.setTextColor(30, 30, 30);
   doc.setFont('helvetica', 'bold');
   doc.text(`Case ID: ${state.caseId}`, 14, 38);
-  doc.text(`Target Subject: ${activeTargetData.person}`, 14, 44);
-  doc.text(`Lead Officer: ${state.investigator} (Badge: ${state.badge})`, 110, 38);
-  doc.text(`Timestamp: ${new Date().toLocaleString('en-IN')}`, 110, 44);
+  doc.text(`Target Suspect: ${activeTargetData.person}`, 14, 44);
+  doc.text(activeTargetData.hasVictim ? `Victim: ${activeTargetData.victim}` : `Scope: Single Suspect Analysis`, 110, 38);
+  doc.text(`Lead Officer: ${state.investigator} (${state.badge})`, 110, 44);
 
   doc.setDrawColor(200, 200, 200);
   doc.line(14, 48, 196, 48);
@@ -719,30 +993,31 @@ async function downloadForensicPDF() {
   doc.setFontSize(10.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...primary);
-  doc.text('1. RESOLVED TARGET PROFILES & IDENTIFIERS', 14, 54);
+  doc.text('1. RESOLVED PROFILES & CASE ACTORS', 14, 54);
 
-  const profileRows = activeTargetData.profiles.map(p => [
-    p.platform,
-    p.handle,
-    p.followers ? `Followers: ${p.followers}` : `Friends: ${p.friends || 'N/A'}`
-  ]);
+  const profileRows = [
+    ['Suspect Target', activeTargetData.person, activeTargetData.profiles.map(p => `${p.platform}: ${p.handle}`).join(' | ')]
+  ];
+  if (activeTargetData.hasVictim) {
+    profileRows.push(['Victim / Subject', activeTargetData.victim, `Identified Case Complainant (${activeTargetData.victimHandle})`]);
+  }
 
   if (doc.autoTable) {
     doc.autoTable({
       startY: 57,
-      head: [['Platform', 'Resolved Handle / Alias', 'Network Footprint']],
+      head: [['Role', 'Actor Name', 'Network Identifiers']],
       body: profileRows,
       theme: 'grid',
       headStyles: { fillColor: primary, textColor: [255, 255, 255], fontStyle: 'bold' },
       styles: { fontSize: 8, cellPadding: 2 }
     });
 
-    // Section 2: Relationship Graph Diagram (Canvas Capture)
+    // Section 2: Relationship Graph
     let nextY = doc.lastAutoTable.finalY + 8;
     doc.setFontSize(10.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...primary);
-    doc.text('2. NETWORK RELATIONSHIP & MUTUAL ASSOCIATES GRAPH', 14, nextY);
+    doc.text(activeTargetData.hasVictim ? '2. NETWORK RELATIONSHIP & MUTUAL CIRCLE GRAPH' : '2. SUSPECT NETWORK & FREQUENT ASSOCIATES GRAPH', 14, nextY);
 
     const canvas = document.getElementById('graphCanvas');
     if (canvas) {
@@ -760,7 +1035,7 @@ async function downloadForensicPDF() {
       nextY = 20;
     }
 
-    // Section 3: High-Priority Suspicious Evidence (Full Text Wrapped, No Ellipsis)
+    // Section 3: High-Priority Suspicious Evidence
     doc.setFontSize(10.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...redAlert);
@@ -782,12 +1057,7 @@ async function downloadForensicPDF() {
       body: suspiciousRows,
       theme: 'grid',
       headStyles: { fillColor: redAlert, textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { 
-        fontSize: 7.5, 
-        cellPadding: 3, 
-        overflow: 'linebreak', 
-        valign: 'top' 
-      },
+      styles: { fontSize: 7.5, cellPadding: 3, overflow: 'linebreak', valign: 'top' },
       columnStyles: {
         0: { cellWidth: 16 },
         1: { cellWidth: 20 },
@@ -825,12 +1095,7 @@ async function downloadForensicPDF() {
       body: normalRows,
       theme: 'striped',
       headStyles: { fillColor: [55, 65, 81], textColor: [255, 255, 255] },
-      styles: { 
-        fontSize: 7, 
-        cellPadding: 2.5, 
-        overflow: 'linebreak', 
-        valign: 'top' 
-      },
+      styles: { fontSize: 7, cellPadding: 2.5, overflow: 'linebreak', valign: 'top' },
       columnStyles: {
         0: { cellWidth: 16 },
         1: { cellWidth: 22 },
@@ -865,12 +1130,7 @@ async function downloadForensicPDF() {
       body: custodyRows,
       theme: 'grid',
       headStyles: { fillColor: primary, textColor: [255, 255, 255] },
-      styles: { 
-        fontSize: 7, 
-        cellPadding: 2.5, 
-        overflow: 'linebreak', 
-        valign: 'top' 
-      },
+      styles: { fontSize: 7, cellPadding: 2.5, overflow: 'linebreak', valign: 'top' },
       columnStyles: {
         0: { cellWidth: 32 },
         1: { cellWidth: 28 },
@@ -885,7 +1145,6 @@ async function downloadForensicPDF() {
       finalY = 20;
     }
 
-    // Certificate Footer
     doc.setDrawColor(...accent);
     doc.setLineWidth(0.8);
     doc.rect(14, finalY, 182, 18);
@@ -906,7 +1165,6 @@ async function downloadForensicPDF() {
   toast("Certified Forensic PDF Dossier Downloaded!");
 }
 
-// Fallback Text Report Downloader (Full Untruncated Trace)
 function downloadForensicReport() {
   const suspiciousEv = state.evidence.filter(e => e.isSuspicious);
   const normalEv = state.evidence.filter(e => !e.isSuspicious);
@@ -915,7 +1173,8 @@ function downloadForensicReport() {
 ================================================================================
 Case Reference : ${state.caseId}
 Investigator   : ${state.investigator} (Badge: ${state.badge})
-Target Subject : ${activeTargetData.person}
+Target Suspect : ${activeTargetData.person}
+Victim Name    : ${activeTargetData.hasVictim ? activeTargetData.victim : 'N/A (Single Suspect Mode)'}
 Generated At   : ${new Date().toISOString()}
 
 ================================================================================
@@ -987,7 +1246,6 @@ function cycleStepBackground() {
   bgIndex++;
 }
 
-// Hook into tab switching
 const originalSwitchTab = window.switchTab;
 window.switchTab = function(tabId) {
   currentTab = tabId;
@@ -996,7 +1254,6 @@ window.switchTab = function(tabId) {
   if (originalSwitchTab) originalSwitchTab(tabId);
 };
 
-// Start cycle
 cycleStepBackground();
 if (bgTimer) clearInterval(bgTimer);
 bgTimer = setInterval(cycleStepBackground, 2000);
