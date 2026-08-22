@@ -440,7 +440,7 @@ async function runCollectionAction() {
   setTimeout(() => switchTab('vault'), 700);
 }
 
-// 03 Vault Toggle & Render
+// 03 Vault Toggle & Render (Updated: Full Uncut Victim Posts View)
 function switchVaultView(entity) {
   currentVaultView = entity;
   const btnS = document.getElementById('btnVaultSuspect');
@@ -505,7 +505,7 @@ function renderVault() {
       list.appendChild(row);
     });
   } 
-  // View: Victim Reference Data
+  // View: Victim Reference Data (Full Content Display)
   else {
     if (!activeTargetData.hasVictim) {
       if (stats) {
@@ -537,25 +537,22 @@ function renderVault() {
     state.victimEvidence.forEach(vEv => {
       const row = document.createElement('div');
       row.className = 'ev-row';
+      row.style.alignItems = 'start';
       const tag = vEv.platform.toLowerCase().includes('insta') ? 'instagram' : 'facebook';
 
       row.innerHTML = `
         <div><span class="tag ${tag}">${vEv.platform}</span></div>
-        <div class="ev-cell-content">
-          <div class="ev-text">
-            <b>[${vEv.id}]</b> "${vEv.content}"
+        <div style="min-width:0; padding-right:12px;">
+          <div style="font-size:13px; color:var(--ink); line-height:1.5; margin-bottom:6px; white-space:normal; word-break:break-word;">
+            <b>[${vEv.id}] ${activeTargetData.victim} (${vEv.handle}):</b> "${vEv.content}"
           </div>
-          <div class="ev-tooltip">
-            <div class="tip-title"><b>[${vEv.id}] ${activeTargetData.victim}</b></div>
-            <div style="font-size:12px; color:#38BDF8; margin-bottom:4px;">${vEv.comment}</div>
-            <div style="font-size:11.5px; color:var(--ink-dim);">
-              Verified public baseline interaction matching case mutual circle.
-            </div>
+          <div style="font-size:11.5px; font-family:var(--mono); color:#BAE6FD; background:rgba(56, 189, 248, 0.12); padding:5px 8px; border-radius:4px; border-left:3px solid #38BDF8; line-height:1.4;">
+            <b>Public Mutual Comment:</b> ${vEv.comment} · 📍 <i>${vEv.location}</i>
           </div>
         </div>
-        <div class="hash" title="${vEv.hash}">${short(vEv.hash)}</div>
-        <div style="color:var(--ink-faint); font-size:11.5px;">${fmtTime(vEv.time)}</div>
-        <div class="verified" style="color:#38BDF8;">
+        <div class="hash" title="${vEv.hash}" style="margin-top:2px;">${short(vEv.hash)}</div>
+        <div style="color:var(--ink-faint); font-size:11.5px; margin-top:2px;">${fmtTime(vEv.time)}</div>
+        <div class="verified" style="color:#38BDF8; font-weight:600; margin-top:2px;">
           VICTIM LOG
         </div>
       `;
@@ -679,7 +676,7 @@ function drawGraph() {
         <span><i style="width:10px;height:10px;border-radius:50%;background:#EAB308;display:inline-block;margin-right:6px;"></i>Suspect Target</span>
         <span><i style="width:10px;height:10px;border-radius:50%;background:#38BDF8;display:inline-block;margin-right:6px;"></i>Victim / Complainant</span>
         <span><i style="width:10px;height:10px;border-radius:50%;background:#3ECF8E;display:inline-block;margin-right:6px;"></i>Mutual Circle Bridge</span>
-        <span><i style="width:10px;height:10px;border-radius:50%;background:#EF4444;display:inline-block;margin-right:6px;"></i>Suspect Conspirator</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#EF4444;display:inline-block;margin-right:6px;"></i>Flagged Interaction Lead</span>
       `;
     }
   } else {
@@ -689,7 +686,7 @@ function drawGraph() {
         <span><i style="width:10px;height:10px;border-radius:50%;background:#EAB308;display:inline-block;margin-right:6px;"></i>Primary Suspect</span>
         <span><i style="width:10px;height:10px;border-radius:50%;background:#9333EA;display:inline-block;margin-right:6px;"></i>Suspect Social Profiles</span>
         <span><i style="width:10px;height:10px;border-radius:50%;background:#3ECF8E;display:inline-block;margin-right:6px;"></i>Frequently Contacted</span>
-        <span><i style="width:10px;height:10px;border-radius:50%;background:#EF4444;display:inline-block;margin-right:6px;"></i>Suspect Conspirators</span>
+        <span><i style="width:10px;height:10px;border-radius:50%;background:#EF4444;display:inline-block;margin-right:6px;"></i>Flagged Interaction Leads</span>
       `;
     }
   }
@@ -764,7 +761,7 @@ function drawGraph() {
       ctx.fillText("MUTUAL BRIDGE", mx, my + 20);
     });
 
-    // Bottom Conspirators
+    // Bottom Flagged Interaction Leads
     activeTargetData.conspirators.forEach((c, i) => {
       const cx_pos = 70 + (i * 90);
       const cy_pos = h - 60;
@@ -791,7 +788,7 @@ function drawGraph() {
       ctx.fillText(`${c.handle} (${c.totalInteractions}x)`, cx_pos, cy_pos + 20);
       ctx.font = '8px IBM Plex Mono';
       ctx.fillStyle = '#F87171';
-      ctx.fillText("🚨 CO-CONSPIRATOR", cx_pos, cy_pos + 30);
+      ctx.fillText("FLAGGED LEAD", cx_pos, cy_pos + 30);
     });
 
     // Top-Left In-Canvas Legend
@@ -804,7 +801,7 @@ function drawGraph() {
     ctx.fillStyle = '#3ECF8E'; ctx.fillRect(20, 48, 10, 10);
     ctx.fillStyle = '#CBD5E1'; ctx.fillText("Mutual Circle Bridge", 36, 56);
     ctx.fillStyle = '#EF4444'; ctx.fillRect(20, 64, 10, 10);
-    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Suspect Conspirator", 36, 72);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Flagged Interaction Lead", 36, 72);
   } 
   // SCENARIO B: SOLO MODE (No Victim -> Suspect Center Radial Graph with Frequent Contacts)
   else {
@@ -851,7 +848,7 @@ function drawGraph() {
       ctx.fillText(p.platform, p._x, p._y + (p._y > cy ? 20 : -14));
     });
 
-    // Outer Arc Left: Co-Conspirators (Red Alert)
+    // Outer Arc Left: Flagged Interaction Leads (Red Alert)
     activeTargetData.conspirators.forEach((c, i) => {
       const ang = Math.PI * 0.45 + (i * 0.45);
       const nx = cx + 210 * Math.cos(ang);
@@ -880,7 +877,7 @@ function drawGraph() {
       ctx.fillText(`${c.handle} (${c.totalInteractions}x)`, nx, ny + (ny > cy ? 18 : -14));
       ctx.font = '8px IBM Plex Mono';
       ctx.fillStyle = '#F87171';
-      ctx.fillText("🚨 CO-CONSPIRATOR", nx, ny + (ny > cy ? 28 : -22));
+      ctx.fillText("FLAGGED LEAD", nx, ny + (ny > cy ? 28 : -22));
     });
 
     // Outer Arc Right: Frequently Contacted Associates (Green)
@@ -920,7 +917,7 @@ function drawGraph() {
     ctx.fillStyle = '#3ECF8E'; ctx.fillRect(20, 48, 10, 10);
     ctx.fillStyle = '#CBD5E1'; ctx.fillText("Frequently Contacted", 36, 56);
     ctx.fillStyle = '#EF4444'; ctx.fillRect(20, 64, 10, 10);
-    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Suspect Conspirators", 36, 72);
+    ctx.fillStyle = '#CBD5E1'; ctx.fillText("Flagged Leads", 36, 72);
   }
 }
 
